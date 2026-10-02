@@ -1,0 +1,13 @@
+# Obsidian
+.obsidian/
+
+# 原始素材（大图 / 录音，不入库；站点只引用 images/ 下的压缩版）
+/*.jpg
+/*.jpeg
+/*.png
+/*.mp3
+
+# 临时 / 验证产物
+_shots/
+_tmp/
+_shot*.*
