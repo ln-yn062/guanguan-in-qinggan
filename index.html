@@ -375,6 +375,14 @@
   .chat-row.rev .chat-bubble::after{ left:auto; right:-9px;
     border-right:0; border-left:11px solid #fff; }
 
+  /* 照片上的小颜文字 / emoji 点缀（贴纸风小药丸） */
+  .emoji-note{
+    position:absolute; z-index:4; white-space:nowrap;
+    background:#fff; border:3px solid var(--ink); border-radius:999px;
+    padding:6px 13px; font-size:20px; line-height:1;
+    box-shadow:3px 3px 0 rgba(30,60,79,.22);
+  }
+
   /* ---- 景点小标签（贴纸风） ---- */
   .spot-tag{ display:inline-flex; align-items:center; gap:7px; font-size:15px; color:var(--ink);
     background:#fff; border:3px solid var(--ink); border-radius:999px; padding:5px 14px;
@@ -684,6 +692,13 @@
         <p class="body" style="font-size:19px;">罐罐今天去了张掖，看了七彩丹霞。<br>好多人！</p>
       </div>
       <span class="spot-tag" data-anim="pop" style="--d:.85s; position:absolute; right:70px; top:70px; z-index:4;"><span class="ico">🌈</span><span class="nm">七彩丹霞</span><span class="ds">张掖 · 大地的调色盘</span></span>
+      <!-- 照片上散落的小颜文字 / emoji -->
+      <span class="emoji-note" data-anim="pop"  style="--d:.5s;  left:300px;  top:120px;    rotate:-5deg;">(＾▽＾)🌈</span>
+      <span class="emoji-note" data-anim="drop" style="--d:.6s;  right:170px; top:236px;    rotate:4deg;">(&gt;ω&lt;)📸</span>
+      <span class="emoji-note" data-anim="r"    style="--d:.7s;  left:118px;  top:330px;    rotate:-7deg;">(*^▽^*)🎨</span>
+      <span class="emoji-note" data-anim="l"    style="--d:.62s; left:596px;  top:158px;    rotate:2deg;">(o^^o)✨</span>
+      <span class="emoji-note" data-anim="pop"  style="--d:.8s;  right:120px; bottom:132px; rotate:6deg;">(¯▽¯)😍</span>
+      <span class="emoji-note" data-anim="drop" style="--d:.9s;  left:648px;  bottom:150px; rotate:-3deg;">ヽ(＾▽＾)ノ🎉</span>
       <span class="star" style="--d:.6s;  left:60px;  top:60px;     font-size:26px; color:var(--yellow);">✦</span>
       <span class="star" style="--d:.9s;  right:60px; bottom:70px;  font-size:20px; color:var(--teal);">✧</span>
       <span class="star" style="--d:1.1s; right:300px; top:90px;    font-size:22px; color:var(--green);">★</span>
