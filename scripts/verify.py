@@ -230,6 +230,31 @@ async def main():
            f"翻到第 2 页 180ms 时「刚起跑(running,currentTime<500ms)」的入场动画数 = {fresh}"
            f"（应 > 0；为 0 说明动效只在整份文档载入时播过一次，翻页看不到）")
 
+        print("⑭ 手机端：横竖屏都被缩放到屏内且居中；竖屏自动横屏显示")
+        res = {}
+        for (w, h, nm) in [(390, 844, "竖屏"), (844, 390, "横屏")]:
+            mctx = await b.new_context(viewport={"width": w, "height": h},
+                                       is_mobile=True, has_touch=True, device_scale_factor=2)
+            mpg = await mctx.new_page()
+            await mpg.goto(URL)
+            await mpg.wait_for_timeout(900)
+            m = await mpg.evaluate("""()=>{
+              const r=document.getElementById('stage').getBoundingClientRect();
+              return {iw:innerWidth,ih:innerHeight,x:r.left,y:r.top,w:r.width,h:r.height,
+                      cx:r.left+r.width/2,cy:r.top+r.height/2};}""")
+            await mctx.close()
+            res[nm] = m
+            inside = (m["x"] >= -0.5 and m["y"] >= -0.5
+                      and m["x"] + m["w"] <= m["iw"] + 0.5
+                      and m["y"] + m["h"] <= m["ih"] + 0.5)
+            centered = (abs(m["cx"] - m["iw"]/2) <= 1.5 and abs(m["cy"] - m["ih"]/2) <= 1.5)
+            ok(inside, f"{nm} {w}x{h} 舞台完全在屏幕内："
+                       f"x={m['x']:.0f} y={m['y']:.0f} w={m['w']:.0f} h={m['h']:.0f}（屏 {m['iw']}x{m['ih']}）")
+            ok(centered, f"{nm} {w}x{h} 舞台居中：中心({m['cx']:.0f},{m['cy']:.0f})"
+                         f" vs 屏幕中心({m['iw']/2:.0f},{m['ih']/2:.0f})")
+        ok(res["竖屏"]["h"] > res["竖屏"]["w"],
+           f"竖屏自动横屏显示（旋转后屏上高>宽）：w={res['竖屏']['w']:.0f} h={res['竖屏']['h']:.0f}")
+
         print("③b 无报错（全程）")
         ok(not errs, f"pageerror / console error = {errs or 'none'}")
 

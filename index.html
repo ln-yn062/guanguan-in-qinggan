@@ -65,9 +65,19 @@
   }
 
   /* ================= 舞台：固定 16:9，等比缩放居中 ================= */
-  #viewport{ position:fixed; inset:0; display:grid; place-items:center; overflow:hidden; z-index:1; }
+  /* 用 fixed+绝对居中，而非 grid 居中：舞台(1280px)常比窄屏宽，
+     grid 的隐式轨道会溢出到左上角、不居中。绝对定位 + translate 才能真居中。 */
+  #viewport{ position:fixed; inset:0; overflow:hidden; z-index:1; }
+  /* 手机竖屏：把整块舞台连 UI 一起旋转 90°，自动以横屏铺满竖屏，
+     用户把手机横过来即正立；旋转由 JS 检测粗指针+竖屏后加 .flip */
+  #viewport.flip{
+    inset:auto; left:50%; top:50%;
+    width:100vh; height:100vw;      /* 旧浏览器回退 */
+    width:100dvh; height:100dvw;    /* 跟随可见视口，避免浏览器工具栏裁切 */
+    transform:translate(-50%,-50%) rotate(90deg);
+  }
   #stage{
-    position:relative; width:1280px; height:720px;
+    position:absolute; left:50%; top:50%; width:1280px; height:720px;
     transform-origin:center center;
     border-radius:var(--radius);
     background:var(--paper);
@@ -758,12 +768,21 @@
   let idx = 0, busy = false, wipeTimer = null;
 
   /* ---------- 1) 自适应缩放：固定 16:9 等比 fit ---------- */
+  const vp = document.getElementById('viewport');
+  // 触屏设备（手机/平板）才算「手机端」，桌面窗口不旋转
+  const isTouch = matchMedia('(pointer:coarse)').matches || navigator.maxTouchPoints > 0;
   function fit(){
+    // 竖屏触屏 → 整块旋转成横屏，用屏幕长边当宽
+    const flip = isTouch && innerHeight > innerWidth;
+    vp.classList.toggle('flip', flip);
     const pad = 36;
-    const scale = Math.min((innerWidth - pad*2)/1280, (innerHeight - pad*2)/720);
-    stage.style.transform = 'scale(' + scale + ')';
+    // 旋转后 #viewport 的宽高已互换，直接按它实际尺寸算，避免与 CSS 脱节
+    const scale = Math.min((vp.clientWidth - pad*2)/1280, (vp.clientHeight - pad*2)/720);
+    stage.style.transform = 'translate(-50%,-50%) scale(' + scale + ')';
   }
-  addEventListener('resize', fit); fit();
+  addEventListener('resize', fit);
+  addEventListener('orientationchange', fit);
+  fit();
 
   /* ---------- 2) 圆点导航 ---------- */
   slides.forEach((s,i)=>{
