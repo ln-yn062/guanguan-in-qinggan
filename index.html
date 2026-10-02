@@ -68,14 +68,6 @@
   /* 用 fixed+绝对居中，而非 grid 居中：舞台(1280px)常比窄屏宽，
      grid 的隐式轨道会溢出到左上角、不居中。绝对定位 + translate 才能真居中。 */
   #viewport{ position:fixed; inset:0; overflow:hidden; z-index:1; }
-  /* 手机竖屏：把整块舞台连 UI 一起旋转 90°，自动以横屏铺满竖屏，
-     用户把手机横过来即正立；旋转由 JS 检测粗指针+竖屏后加 .flip */
-  #viewport.flip{
-    inset:auto; left:50%; top:50%;
-    width:100vh; height:100vw;      /* 旧浏览器回退 */
-    width:100dvh; height:100dvw;    /* 跟随可见视口，避免浏览器工具栏裁切 */
-    transform:translate(-50%,-50%) rotate(90deg);
-  }
   #stage{
     position:absolute; left:50%; top:50%; width:1280px; height:720px;
     transform-origin:center center;
@@ -84,6 +76,23 @@
     box-shadow:var(--shadow), 0 0 0 8px rgba(255,255,255,.7);
     overflow:hidden;
   }
+
+  /* ---- 手机竖屏：提示横屏观看（JS 给 <html> 加 .show-rotate） ---- */
+  #rotate-hint{
+    position:fixed; inset:0; z-index:60; display:none;
+    flex-direction:column; align-items:center; justify-content:center; gap:20px;
+    padding:36px; text-align:center;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(255,201,60,.5), transparent 55%),
+      radial-gradient(circle at 80% 80%, rgba(46,155,230,.45), transparent 55%),
+      linear-gradient(135deg,#EAF7FF,#E6FBEF 45%,#FFF7DC 80%,#EAF7FF);
+  }
+  html.show-rotate #rotate-hint{ display:flex; }
+  #rotate-hint .rh-ico{ font-size:88px; line-height:1;
+    animation:rhTurn 2.6s ease-in-out infinite; }
+  #rotate-hint .rh-t{ font-size:31px; font-weight:800; color:var(--ink); letter-spacing:3px; }
+  #rotate-hint .rh-s{ font-size:17px; color:var(--ink-soft); letter-spacing:1px; }
+  @keyframes rhTurn{ 0%,42%{ transform:rotate(0deg); } 58%,100%{ transform:rotate(-90deg); } }
 
   /* ---- 舞台内背景风景（不随幻灯片移动） ---- */
   .scenery{ position:absolute; inset:0; z-index:0; pointer-events:none; }
@@ -754,6 +763,12 @@
           aria-pressed="false" title="背景音乐">♪</button>
 </div>
 
+<div id="rotate-hint" role="status">
+  <div class="rh-ico" aria-hidden="true">📱</div>
+  <div class="rh-t">请横屏观看</div>
+  <div class="rh-s">把手机横过来，罐罐等你一起出发 ～</div>
+</div>
+
 <audio id="bgm-audio" src="audio/xiaoxingji.mp3" loop preload="auto"></audio>
 
 <script>
@@ -768,16 +783,13 @@
   let idx = 0, busy = false, wipeTimer = null;
 
   /* ---------- 1) 自适应缩放：固定 16:9 等比 fit ---------- */
-  const vp = document.getElementById('viewport');
-  // 触屏设备（手机/平板）才算「手机端」，桌面窗口不旋转
+  // 触屏设备（手机/平板）才算「手机端」，桌面窗口不弹横屏提示
   const isTouch = matchMedia('(pointer:coarse)').matches || navigator.maxTouchPoints > 0;
   function fit(){
-    // 竖屏触屏 → 整块旋转成横屏，用屏幕长边当宽
-    const flip = isTouch && innerHeight > innerWidth;
-    vp.classList.toggle('flip', flip);
+    // 触屏 + 竖屏 → 提示把手机横过来看
+    document.documentElement.classList.toggle('show-rotate', isTouch && innerHeight > innerWidth);
     const pad = 36;
-    // 旋转后 #viewport 的宽高已互换，直接按它实际尺寸算，避免与 CSS 脱节
-    const scale = Math.min((vp.clientWidth - pad*2)/1280, (vp.clientHeight - pad*2)/720);
+    const scale = Math.min((innerWidth - pad*2)/1280, (innerHeight - pad*2)/720);
     stage.style.transform = 'translate(-50%,-50%) scale(' + scale + ')';
   }
   addEventListener('resize', fit);
