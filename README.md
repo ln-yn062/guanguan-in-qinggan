@@ -4,6 +4,7 @@
 
 - **纯静态**：无后端、无构建、无外部 CDN 依赖。样式、脚本全部内联在 `index.html`。
 - **翻页**：键盘 `← → / 空格 / Home / End`、点击左右半屏、左右箭头按钮、底部圆点、手机触屏滑动。
+- **背景音乐**：进入页面自动尝试播放（`audio/xiaoxingji.mp3`，循环）；左上角 `♪` 按钮可手动暂停 / 播放。浏览器若拦截自动播放，会在你首次点击 / 按键 / 触屏后自动开始。
 - **字体**：标题用站酷快乐体，已按站点实际用字**子集化并自托管**（`fonts/`），不依赖 Google Fonts。
 - **图片**：`images/` 下的压缩版（最长边 ≤ 2000px、单张 < 500KB），原图不入库。
 
@@ -12,6 +13,7 @@
 ```
 index.html                 站点全部内容（HTML + CSS + JS 内联）
 images/                    压缩后的照片（mascot.png = 罐罐官方形象）
+audio/xiaoxingji.mp3       背景音乐（循环播放，可手动暂停）
 fonts/zcool-kuaile.subset.woff2   子集化的站酷快乐体
 scripts/optimize_images.py 把根目录原始照片压缩输出到 images/
 scripts/subset_font.py     按 index.html 用字重新生成字体子集
@@ -53,3 +55,7 @@ python scripts/verify.py          # 验证（需要 playwright：pip install pla
 ```bash
 python scripts/optimize_images.py
 ```
+
+## 换背景音乐
+
+直接替换 `audio/xiaoxingji.mp3`（保持文件名），或在 `index.html` 里改 `<audio id="bgm-audio">` 的 `src` 即可。注意音乐版权，公开部署请使用有权使用的音频。

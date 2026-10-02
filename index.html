@@ -259,14 +259,23 @@
 
   /* ---- 漂浮装饰 ---- */
   .deco{ position:absolute; pointer-events:none; user-select:none; z-index:3; }
+  /* 各动效改用「独立变换属性」（translate / rotate）承载，而不是共用 transform，
+     这样 float + spin / sway 叠在同一个元素上时，两段动画不会互相覆盖。 */
   .float-a{ animation:floatA 6s   ease-in-out infinite; }
   .float-b{ animation:floatA 7.6s ease-in-out infinite reverse; }
   .float-c{ animation:floatA 9s   ease-in-out infinite; }
-  @keyframes floatA{ 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-15px) } }
+  @keyframes floatA{ 0%,100%{ translate:0 0 } 50%{ translate:0 -15px } }
   .spin-slow{ animation:spin 16s linear infinite; }
-  @keyframes spin{ to{ transform:rotate(360deg) } }
+  @keyframes spin{ to{ rotate:360deg } }
   .sway{ animation:sway 5s ease-in-out infinite; transform-origin:top center; }
-  @keyframes sway{ 0%,100%{ transform:rotate(-5deg) } 50%{ transform:rotate(5deg) } }
+  @keyframes sway{ 0%,100%{ rotate:-5deg } 50%{ rotate:5deg } }
+  /* 组合动效：把两段 animation 一次写全（float 驱动 translate、spin/sway 驱动 rotate） */
+  .float-a.spin-slow{ animation:floatA 6s   ease-in-out infinite, spin 16s linear infinite; }
+  .float-b.spin-slow{ animation:floatA 7.6s ease-in-out infinite reverse, spin 16s linear infinite; }
+  .float-c.spin-slow{ animation:floatA 9s   ease-in-out infinite, spin 16s linear infinite; }
+  .float-a.sway{ animation:floatA 6s   ease-in-out infinite, sway 5s ease-in-out infinite; }
+  .float-b.sway{ animation:floatA 7.6s ease-in-out infinite reverse, sway 5s ease-in-out infinite; }
+  .float-c.sway{ animation:floatA 9s   ease-in-out infinite, sway 5s ease-in-out infinite; }
   .wiggle:hover{ animation:wiggle .5s ease-in-out; }
   @keyframes wiggle{ 0%,100%{transform:rotate(0)} 25%{transform:rotate(-6deg)} 75%{transform:rotate(6deg)} }
   /* 悬停动画会覆盖入场动画；给回 opacity 兜底，避免 hover 时徽章消失 */
@@ -304,6 +313,18 @@
     padding:6px 16px; border-radius:999px; box-shadow:4px 4px 0 var(--ink); pointer-events:auto; }
   .hint{ position:absolute; left:26px; bottom:26px; font-size:14px; color:var(--ink-soft); letter-spacing:1px;
     background:rgba(255,255,255,.78); padding:6px 14px; border-radius:999px; border:2px dashed rgba(30,60,79,.4); }
+
+  /* ---- 背景音乐开关 ---- */
+  .bgm-btn{ pointer-events:auto; position:absolute; left:26px; top:26px; width:52px; height:52px;
+    border-radius:50%; border:3px solid var(--ink); background:#fff; color:var(--ink);
+    font-size:22px; cursor:pointer; display:grid; place-items:center;
+    box-shadow:4px 4px 0 var(--ink); transition:transform .16s, background .2s, color .2s; }
+  .bgm-btn:hover{ background:var(--yellow); }
+  .bgm-btn:active{ transform:translate(3px,3px); box-shadow:1px 1px 0 var(--ink); }
+  .bgm-btn.on{ background:var(--green); color:#fff; }
+  .bgm-btn .bgm-ico{ display:inline-block; line-height:1; }
+  .bgm-btn.on .bgm-ico{ animation:spin 3.2s linear infinite; }
+  #bgm-audio{ display:none; }
 
   /* ================= 布局 ================= */
   .split{ display:grid; grid-template-columns:1.05fr .95fr; gap:52px; align-items:center; width:100%; }
@@ -684,7 +705,11 @@
   <div id="dots"></div>
   <div id="counter">1 / 10</div>
   <div class="hint">← → / 空格 翻页 · 支持触屏滑动</div>
+  <button class="bgm-btn" id="bgm" type="button" aria-label="背景音乐 播放/暂停"
+          aria-pressed="false" title="背景音乐">♪</button>
 </div>
+
+<audio id="bgm-audio" src="audio/xiaoxingji.mp3" loop preload="auto"></audio>
 
 <script>
 (function(){
@@ -806,6 +831,45 @@
     if(Math.abs(dx)>50){ dx<0 ? next() : prev(); }
     tx=null;
   }, {passive:true});
+
+  /* ---------- 6) 背景音乐：载入即尝试自动播放，可手动暂停 ---------- */
+  const bgm      = document.getElementById('bgm');
+  const bgmAudio = document.getElementById('bgm-audio');
+  bgmAudio.volume = 0.55;
+  let userPaused = false;   // 用户手动暂停后，不再自动续播
+
+  function paintBgm(){
+    const on = !bgmAudio.paused;
+    bgm.classList.toggle('on', on);
+    bgm.setAttribute('aria-pressed', String(on));
+    bgm.title = on ? '背景音乐：开（点击暂停）' : '背景音乐：关（点击播放）';
+  }
+  bgm.addEventListener('click', ()=>{
+    if(bgmAudio.paused){ userPaused = false; bgmAudio.play().catch(()=>{}); }
+    else { userPaused = true; bgmAudio.pause(); }
+  });
+  bgmAudio.addEventListener('play',  paintBgm);
+  bgmAudio.addEventListener('pause', paintBgm);
+
+  // 自动播放策略：先直接尝试；被拦截时在「首次交互」后补播（用户手动暂停过则跳过）。
+  // 点开关按钮本身不触发补播，交给它的 click 处理，避免一次点击既播又停。
+  const kickEvents = [];
+  const offKick = ()=>{
+    kickEvents.forEach(([ev, fn])=> removeEventListener(ev, fn));
+    kickEvents.length = 0;
+  };
+  const startBgm = ()=> bgmAudio.play().then(offKick, ()=>{});
+  const kickBgm  = e=>{
+    if(e.target && e.target.closest && e.target.closest('#bgm')) return;
+    if(!userPaused && bgmAudio.paused) startBgm();
+  };
+  ['pointerdown','keydown','touchstart'].forEach(ev=>{
+    const fn = e=> kickBgm(e);
+    addEventListener(ev, fn, {passive:true});
+    kickEvents.push([ev, fn]);
+  });
+  startBgm();
+  paintBgm();
 
   updateUI('next');
 })();

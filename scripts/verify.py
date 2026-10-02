@@ -117,6 +117,50 @@ async def main():
         ok(hover_bad is None, "hover 后徽章 opacity > 0.9"
            + (f"，异常: {hover_bad}" if hover_bad else ""))
 
+        print("⑧ 装饰动效：float + spin/sway 叠加不得互相覆盖")
+        combos = await pg.evaluate("""()=>{
+          const names=(sel)=>{const e=document.querySelector(sel);
+            return e?getComputedStyle(e).animationName.split(',').map(s=>s.trim()).filter(Boolean):null;};
+          return {fs:names('.deco.float-a.spin-slow'), fc:names('.deco.float-c.sway')};
+        }""")
+        ok(combos["fs"] and len(combos["fs"]) == 2
+           and "floatA" in combos["fs"] and "spin" in combos["fs"],
+           f"float-a.spin-slow 动画 = {combos['fs']}（应含 floatA + spin）")
+        ok(combos["fc"] and len(combos["fc"]) == 2
+           and "floatA" in combos["fc"] and "sway" in combos["fc"],
+           f"float-c.sway 动画 = {combos['fc']}（应含 floatA + sway）")
+
+        print("⑨ 背景音乐：文件存在 + 元素就绪 + 开关可暂停/播放")
+        mp3 = ROOT / "audio" / "xiaoxingji.mp3"
+        ok(mp3.exists() and mp3.stat().st_size > 0,
+           f"audio/xiaoxingji.mp3 存在（{mp3.stat().st_size/1024/1024:.1f} MB）" if mp3.exists() else "audio/xiaoxingji.mp3 缺失")
+        a = await pg.evaluate("""()=>{const el=document.getElementById('bgm-audio');
+          return el?{src:el.getAttribute('src'), loop:el.loop, vol:el.volume, tag:el.tagName}:null;}""")
+        ok(bool(a) and a["tag"] == "AUDIO" and a["src"] == "audio/xiaoxingji.mp3"
+           and a["loop"] is True and 0 < a["vol"] <= 1,
+           f"#bgm-audio 就绪：{a}")
+        ok(await pg.is_visible("#bgm"), "音乐开关 #bgm 可见")
+
+        await pg.evaluate("()=>document.getElementById('bgm-audio').pause()")
+        await pg.wait_for_timeout(120)
+        paused_after = await pg.evaluate(
+            "()=>{document.getElementById('bgm').click(); return document.getElementById('bgm-audio').paused;}")
+        await pg.wait_for_timeout(200)
+        st = await pg.evaluate("""()=>({paused:document.getElementById('bgm-audio').paused,
+          on:document.getElementById('bgm').classList.contains('on'),
+          pressed:document.getElementById('bgm').getAttribute('aria-pressed')})""")
+        ok(paused_after is False and st["paused"] is False and st["on"] and st["pressed"] == "true",
+           f"点击 → 播放：{st}")
+
+        clicked_pause = await pg.evaluate(
+            "()=>{document.getElementById('bgm').click(); return document.getElementById('bgm-audio').paused;}")
+        await pg.wait_for_timeout(200)
+        st2 = await pg.evaluate("""()=>({paused:document.getElementById('bgm-audio').paused,
+          on:document.getElementById('bgm').classList.contains('on'),
+          pressed:document.getElementById('bgm').getAttribute('aria-pressed')})""")
+        ok(clicked_pause is True and st2["paused"] is True and (not st2["on"]) and st2["pressed"] == "false",
+           f"再次点击 → 暂停：{st2}")
+
         print("③b 无报错（全程）")
         ok(not errs, f"pageerror / console error = {errs or 'none'}")
 
