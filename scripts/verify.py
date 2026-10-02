@@ -1,0 +1,120 @@
+# -*- coding: utf-8 -*-
+"""端到端验证 index.html：页数、图片加载、字体、翻页竞态、触屏、截图。
+
+用法： python scripts/verify.py
+"""
+import asyncio
+import sys
+from pathlib import Path
+
+from playwright.async_api import async_playwright
+
+try:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
+
+ROOT = Path(__file__).resolve().parent.parent
+URL = "file:///" + str(ROOT / "index.html").replace("\\", "/")
+SHOTS = ROOT / "_shots"
+
+FAILS = []
+
+
+def ok(cond, msg):
+    print(("  PASS  " if cond else "  FAIL  ") + msg)
+    if not cond:
+        FAILS.append(msg)
+
+
+async def main():
+    errs = []
+    SHOTS.mkdir(exist_ok=True)
+    async with async_playwright() as p:
+        b = await p.chromium.launch()
+        ctx = await b.new_context(viewport={"width": 1440, "height": 900}, has_touch=True)
+        pg = await ctx.new_page()
+        pg.on("pageerror", lambda e: errs.append("pageerror: " + str(e)))
+        pg.on("console", lambda m: errs.append("console: " + m.text) if m.type == "error" else None)
+        await pg.goto(URL)
+        await pg.wait_for_timeout(1400)
+
+        print("① 页数")
+        n = await pg.eval_on_selector_all(".slide", "els=>els.length")
+        ok(n == 10, f".slide 数量 = {n}（应为 10）")
+
+        print("② 图片 / 字体")
+        imgs = await pg.eval_on_selector_all(
+            ".slide img", "els=>els.map(e=>({s:e.getAttribute('src'), w:e.naturalWidth}))")
+        bad = [i["s"] for i in imgs if not i["w"]]
+        ok(not bad, f"{len(imgs)} 张图片全部加载" + (f"，未加载: {bad}" if bad else ""))
+        font_ok = await pg.evaluate(
+            "async()=>{await document.fonts.ready; return document.fonts.check(\"20px 'ZCOOL KuaiLe'\")}")
+        ok(bool(font_ok), "展示字体 ZCOOL KuaiLe 已加载生效")
+
+        print("③ 无报错（初始）")
+        ok(not errs, f"pageerror / console error = {errs or 'none'}")
+
+        print("④ 翻页竞态：连按 5 次右箭头")
+        await pg.keyboard.press("Home"); await pg.wait_for_timeout(900)
+        for _ in range(5):
+            await pg.keyboard.press("ArrowRight")
+        await pg.wait_for_timeout(1400)
+        act = await pg.eval_on_selector_all(".slide.active", "els=>els.length")
+        lv = await pg.eval_on_selector_all(".slide.leaving", "els=>els.length")
+        ok(act == 1 and lv == 0, f"连按后 active={act}（应 1）、leaving={lv}（应 0）")
+
+        print("④b 逐页按下可达末页")
+        await pg.keyboard.press("Home"); await pg.wait_for_timeout(900)
+        for _ in range(9):
+            await pg.keyboard.press("ArrowRight"); await pg.wait_for_timeout(760)
+        last = await pg.eval_on_selector_all(".slide.active", "els=>els.map(e=>e.dataset.label)")
+        ok(len(last) == 1 and last[0] == "旅程结束", f"末页 active={last}")
+
+        print("⑤ 触屏滑动只前进一页")
+        await pg.keyboard.press("Home"); await pg.wait_for_timeout(900)
+        await pg.evaluate("""()=>{
+          const el=document.getElementById('stage'); const r=el.getBoundingClientRect();
+          const y=r.top+r.height/2;
+          const mk=(x)=>new Touch({identifier:1,target:el,clientX:x,clientY:y,pageX:x,pageY:y});
+          el.dispatchEvent(new TouchEvent('touchstart',{bubbles:true,changedTouches:[mk(r.left+r.width*0.75)]}));
+          el.dispatchEvent(new TouchEvent('touchend',  {bubbles:true,changedTouches:[mk(r.left+r.width*0.25)]}));
+        }""")
+        await pg.wait_for_timeout(1300)
+        sw = await pg.eval_on_selector_all(".slide.active", "els=>els.map(e=>e.dataset.label)")
+        ok(len(sw) == 1 and sw[0] == "献词 · 给晨阳", f"swipe 后 active={sw}（应为第 2 页）")
+
+        print("⑥ 逐页截图 + 标题可见性")
+        bad_sh = []
+        for i in range(10):
+            await pg.keyboard.press("Home"); await pg.wait_for_timeout(800)
+            for _ in range(i):
+                await pg.keyboard.press("ArrowRight"); await pg.wait_for_timeout(760)
+            await pg.wait_for_timeout(900)
+            label = await pg.eval_on_selector(".slide.active", "e=>e.dataset.label")
+            sh = await pg.eval_on_selector_all(
+                ".slide.active .shimmer",
+                "els=>els.map(e=>({t:e.textContent.trim(), o:parseFloat(getComputedStyle(e).opacity), w:e.getBoundingClientRect().width}))")
+            for s in sh:
+                if s["o"] < 0.9 or s["w"] < 1:
+                    bad_sh.append(f"{label}: {s}")
+            await pg.screenshot(path=str(SHOTS / f"{i+1:02d}.png"))
+            print(f"  _shots/{i+1:02d}.png  ({label})")
+        ok(not bad_sh, "shimmer 标题均可见（opacity/宽度正常）" + (f"，异常: {bad_sh}" if bad_sh else ""))
+
+        print("③b 无报错（全程）")
+        ok(not errs, f"pageerror / console error = {errs or 'none'}")
+
+        await b.close()
+
+    print()
+    if FAILS:
+        print(f"FAILED ({len(FAILS)}):")
+        for f in FAILS:
+            print("  - " + f)
+        sys.exit(1)
+    print("ALL PASS")
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

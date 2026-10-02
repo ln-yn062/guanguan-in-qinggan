@@ -217,6 +217,13 @@
   }
   @keyframes shimmerMove{ to{ background-position:280% 0 } }
 
+  /* shimmer 与入场动画同时存在时，两者都占用 animation 属性，需合并声明 */
+  .shimmer[data-anim="rise"]  { animation: rise    .75s cubic-bezier(.22,1,.36,1) var(--d,0s) both, shimmerMove 6s linear infinite; }
+  .shimmer[data-anim="bounce"]{ animation: bounceUp .9s cubic-bezier(.34,1.6,.5,1) var(--d,0s) both, shimmerMove 6s linear infinite; }
+  .shimmer[data-anim="pop"]   { animation: pop     .8s  cubic-bezier(.34,1.56,.64,1) var(--d,0s) both, shimmerMove 6s linear infinite; }
+  .shimmer[data-anim="drop"]  { animation: drop    .8s  cubic-bezier(.34,1.56,.64,1) var(--d,0s) both, shimmerMove 6s linear infinite; }
+  .shimmer[data-anim="fade"]  { animation: fadeIn  .7s  ease var(--d,0s) both, shimmerMove 6s linear infinite; }
+
   .hl{ position:relative; white-space:nowrap; }
   .hl::after{
     content:""; position:absolute; left:-4px; right:-4px; bottom:6px; height:20px;
