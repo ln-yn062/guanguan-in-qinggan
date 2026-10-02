@@ -47,6 +47,16 @@ async def wait_vis(pg, sel, min_o=0.99, timeout=5000):
         arg={"s": sel, "m": min_o}, timeout=timeout)
 
 
+async def wait_anims(pg, timeout=8000):
+    """等当前页所有 data-anim 元素入场动画结束（opacity 到 1）。
+
+    比死等时间可靠 —— 无论这页元素用的是哪种入场动效都能正确等到位。
+    """
+    await pg.wait_for_function(
+        "()=>[...document.querySelectorAll('.slide.active [data-anim]')]"
+        ".every(e=>parseFloat(getComputedStyle(e).opacity)>=0.99)", timeout=timeout)
+
+
 async def main():
     errs = []
     SHOTS.mkdir(exist_ok=True)
@@ -110,7 +120,7 @@ async def main():
             await pg.keyboard.press("Home"); await settle(pg)
             for _ in range(i):
                 await pg.keyboard.press("ArrowRight"); await settle(pg)
-            await wait_vis(pg, ".slide.active .shimmer")
+            await wait_anims(pg)
             label = await pg.eval_on_selector(".slide.active", "e=>e.dataset.label")
             sh = await pg.eval_on_selector_all(
                 ".slide.active .shimmer",
@@ -190,6 +200,20 @@ async def main():
             seq.append(await pg.eval_on_selector("#stage", "e=>e.dataset.fx"))
         ok(len(set(seq)) == 4 and set(seq) == {"slide", "push", "zoom", "wipe"},
            f"连续 4 次翻页的转场 = {seq}（应覆盖 slide/push/zoom/wipe）")
+
+        print("⑪ 无彩色线条动效残留")
+        n_lines = await pg.eval_on_selector_all("#fxlines, #fxlines *", "els=>els.length")
+        ok(n_lines == 0, f"#fxlines 元素数 = {n_lines}（应为 0，线条动效已移除）")
+
+        print("⑫ 入场动效多样性：同页图片各用不同动画")
+        await pg.keyboard.press("Home"); await settle(pg)
+        for _ in range(2):
+            await pg.keyboard.press("ArrowRight"); await settle(pg)   # 到第 3 页（三张图）
+        names = await pg.eval_on_selector_all(
+            ".slide.active figure, .slide.active .photo, .slide.active .mascot",
+            "els=>els.map(e=>getComputedStyle(e).animationName)")
+        ok(len(names) >= 3 and len(set(names)) >= 3,
+           f"第 3 页图片入场动画 = {names}（应 ≥3 种不同）")
 
         print("③b 无报错（全程）")
         ok(not errs, f"pageerror / console error = {errs or 'none'}")

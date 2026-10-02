@@ -95,23 +95,44 @@
   /* 正在离场的旧页：保持可见，交给动画收尾 */
   .slide.leaving{ opacity:1; visibility:visible; pointer-events:none; z-index:1; }
 
-  /* ---- 元素入场动画（元素级错峰）：data-anim + --d 延迟 ---- */
+  /* ---- 元素入场动画（元素级错峰）：data-anim + --d 延迟 ----
+     一整套「动作库」，各页按元素挑用，避免全站一个动效：
+       文字/标签：rise risefar drop pop blur flip
+       图片/卡片：fade l r roll rolll zoom tilt swing wipe */
   @keyframes rise    { from{opacity:0; transform:translateY(30px)} to{opacity:1; transform:none} }
+  @keyframes riseFar { from{opacity:0; transform:translateY(70px)} to{opacity:1; transform:none} }
   @keyframes pop     { 0%{opacity:0; transform:scale(.55) rotate(-7deg)} 65%{transform:scale(1.07) rotate(2.5deg)} 100%{opacity:1; transform:scale(1) rotate(0)} }
   @keyframes fadeIn  { from{opacity:0} to{opacity:1} }
   @keyframes slideInR{ from{opacity:0; transform:translateX(64px)}  to{opacity:1; transform:none} }
   @keyframes slideInL{ from{opacity:0; transform:translateX(-64px)} to{opacity:1; transform:none} }
   @keyframes drop    { 0%{opacity:0; transform:translateY(-34px) rotate(-4deg)} 70%{transform:translateY(4px) rotate(1deg)} 100%{opacity:1; transform:none} }
   @keyframes bounceUp{ 0%{opacity:0; transform:scale(.6)} 100%{opacity:1; transform:none} }
+  @keyframes blurIn  { from{opacity:0; filter:blur(14px)} to{opacity:1; filter:blur(0)} }
+  @keyframes flipUp  { from{opacity:0; transform:perspective(900px) rotateX(46deg)} to{opacity:1; transform:perspective(900px) rotateX(0)} }
+  @keyframes zoomOut { from{opacity:0; transform:scale(1.24)} to{opacity:1; transform:none} }
+  @keyframes swingIn { 0%{opacity:0; transform:rotate(12deg) scale(.93)} 60%{opacity:1; transform:rotate(-3.5deg)} 100%{opacity:1; transform:none} }
+  @keyframes tiltIn  { 0%{opacity:0; transform:translateY(46px) rotate(-6deg) scale(.9)} 65%{opacity:1; transform:translateY(-5px) rotate(1.6deg) scale(1.02)} 100%{opacity:1; transform:none} }
+  @keyframes rollIn  { 0%{opacity:0; transform:translateX(150px) rotate(10deg)} 100%{opacity:1; transform:none} }
+  @keyframes rollInL { 0%{opacity:0; transform:translateX(-150px) rotate(-10deg)} 100%{opacity:1; transform:none} }
+  @keyframes wipeR   { from{opacity:1; clip-path:inset(0 100% 0 0)} to{opacity:1; clip-path:inset(0 0 0 0)} }
 
   [data-anim]{ opacity:0; }
-  [data-anim="rise"]  { animation: rise    .75s cubic-bezier(.22,1,.36,1) var(--d,0s) both; }
-  [data-anim="pop"]   { animation: pop     .8s  cubic-bezier(.34,1.56,.64,1) var(--d,0s) both; }
-  [data-anim="fade"]  { animation: fadeIn  .7s  ease var(--d,0s) both; }
-  [data-anim="r"]     { animation: slideInR .8s cubic-bezier(.22,1,.36,1) var(--d,0s) both; }
-  [data-anim="l"]     { animation: slideInL .8s cubic-bezier(.22,1,.36,1) var(--d,0s) both; }
-  [data-anim="drop"]  { animation: drop    .8s  cubic-bezier(.34,1.56,.64,1) var(--d,0s) both; }
-  [data-anim="bounce"]{ animation: bounceUp .9s cubic-bezier(.34,1.6,.5,1) var(--d,0s) both; }
+  [data-anim="rise"]   { animation: rise    .75s cubic-bezier(.22,1,.36,1) var(--d,0s) both; }
+  [data-anim="risefar"]{ animation: riseFar .9s  cubic-bezier(.22,1,.36,1) var(--d,0s) both; }
+  [data-anim="pop"]    { animation: pop     .8s  cubic-bezier(.34,1.56,.64,1) var(--d,0s) both; }
+  [data-anim="fade"]   { animation: fadeIn  .8s  ease var(--d,0s) both; }
+  [data-anim="r"]      { animation: slideInR .8s cubic-bezier(.22,1,.36,1) var(--d,0s) both; }
+  [data-anim="l"]      { animation: slideInL .8s cubic-bezier(.22,1,.36,1) var(--d,0s) both; }
+  [data-anim="drop"]   { animation: drop    .8s  cubic-bezier(.34,1.56,.64,1) var(--d,0s) both; }
+  [data-anim="bounce"] { animation: bounceUp .9s cubic-bezier(.34,1.6,.5,1) var(--d,0s) both; }
+  [data-anim="blur"]   { animation: blurIn  .85s ease var(--d,0s) both; }
+  [data-anim="flip"]   { animation: flipUp  .85s cubic-bezier(.22,1,.36,1) var(--d,0s) both; transform-origin:bottom center; }
+  [data-anim="zoom"]   { animation: zoomOut .9s  cubic-bezier(.22,1,.36,1) var(--d,0s) both; }
+  [data-anim="swing"]  { animation: swingIn .9s  cubic-bezier(.34,1.3,.5,1) var(--d,0s) both; transform-origin:top center; }
+  [data-anim="tilt"]   { animation: tiltIn  .95s cubic-bezier(.34,1.4,.5,1) var(--d,0s) both; }
+  [data-anim="roll"]   { animation: rollIn  .95s cubic-bezier(.22,1,.36,1) var(--d,0s) both; }
+  [data-anim="rolll"]  { animation: rollInL .95s cubic-bezier(.22,1,.36,1) var(--d,0s) both; }
+  [data-anim="wipe"]   { animation: wipeR   .95s cubic-bezier(.65,0,.35,1) var(--d,0s) both; }
 
   /* ---- 小星星装饰：切换页面时弹出 + 持续闪烁 ---- */
   .star{
@@ -180,22 +201,6 @@
     transform:scaleY(0); transform-origin:top center;
     transition-delay:0s;
   }
-
-  /* ---- 线条扫过（每次切换播放一次） ---- */
-  #fxlines{ position:absolute; inset:0; z-index:36; pointer-events:none; opacity:0; }
-  #stage.playfx #fxlines{ opacity:1; }
-  #fxlines line{ stroke-width:7; stroke-linecap:round; stroke-dasharray:2200; stroke-dashoffset:2200; }
-  #fxlines .dot{ opacity:0; }
-  #stage.playfx #fxlines line { animation: drawLine .8s cubic-bezier(.22,1,.36,1) both; }
-  #stage.playfx #fxlines .dot  { animation: dotIn .5s ease both; }
-  #stage.playfx #fxlines line:nth-of-type(1){ animation-delay:.02s; }
-  #stage.playfx #fxlines line:nth-of-type(2){ animation-delay:.10s; }
-  #stage.playfx #fxlines line:nth-of-type(3){ animation-delay:.18s; }
-  #stage.playfx #fxlines .dot:nth-of-type(1){ animation-delay:.34s; }
-  #stage.playfx #fxlines .dot:nth-of-type(2){ animation-delay:.44s; }
-  #stage.playfx #fxlines .dot:nth-of-type(3){ animation-delay:.54s; }
-  @keyframes drawLine{ to{ stroke-dashoffset:0 } }
-  @keyframes dotIn{ 0%{opacity:0; transform:scale(0)} 70%{opacity:1; transform:scale(1.3)} 100%{opacity:1; transform:scale(1)} }
 
   /* ================= 通用元件 ================= */
   h1,h2,.display{ font-family:'ZCOOL KuaiLe','PingFang SC','Microsoft YaHei',system-ui,sans-serif; font-weight:400; letter-spacing:.5px; }
@@ -421,7 +426,7 @@
         </div>
 
         <div style="display:grid; place-items:center; position:relative;">
-          <img class="mascot" data-anim="bounce" style="--d:.35s;" src="images/mascot.png" alt="罐罐">
+          <img class="mascot" data-anim="swing" style="--d:.3s;" src="images/mascot.png" alt="罐罐">
         </div>
       </div>
     </section>
@@ -438,7 +443,7 @@
       <div class="stack" style="width:100%; align-items:center; text-align:center; justify-content:center; gap:26px;">
         <span class="kicker" data-anim="drop" style="--d:.1s;">献 词</span>
         <h1 class="shimmer" data-anim="bounce" style="--d:.25s; font-size:72px;">给 晨阳</h1>
-        <p class="body" data-anim="rise" style="--d:.5s; max-width:38ch; font-size:24px;">
+        <p class="body" data-anim="blur" style="--d:.5s; max-width:38ch; font-size:24px;">
           谢谢你，把罐罐从店里带回身边，<br>又带着它走了这么远的路。
         </p>
         <span class="kicker" data-anim="pop" style="--d:.8s; background:var(--teal); color:#fff;">🐭 罐罐 敬上</span>
@@ -461,15 +466,15 @@
         </div>
 
         <div class="strip">
-          <figure data-anim="r" style="--d:.25s;">
+          <figure data-anim="fade" style="--d:.25s;">
             <img src="images/d03-shop.jpg" alt="罐罐以前的家">
             <figcaption class="cap">这是罐罐以前的家，<br>也是罐罐第一次遇见人的地方！</figcaption>
           </figure>
-          <figure data-anim="rise" style="--d:.4s;">
+          <figure data-anim="roll" style="--d:.42s;">
             <img src="images/d03-night.jpg" alt="西宁夜景">
             <figcaption class="cap">这是罐罐的家乡西宁，<br>罐罐的家很漂亮哒！</figcaption>
           </figure>
-          <figure data-anim="l" style="--d:.55s;">
+          <figure data-anim="rolll" style="--d:.58s;">
             <img src="images/d03-nest.jpg" alt="罐罐的窝">
             <figcaption class="cap">没想到人把罐罐的窝<br>也一并打包带走了 (⊙o⊙)………</figcaption>
           </figure>
@@ -495,8 +500,8 @@
 
         <div class="split" style="grid-template-columns:1fr 1.02fr; gap:40px; align-items:stretch;">
           <div style="display:grid; grid-template-columns:1.35fr 1fr; gap:16px; height:330px;">
-            <div class="photo" data-anim="r" style="--d:.3s;"><img class="photo-img" src="images/d04-qinghaihu.jpg" alt="青海湖"></div>
-            <div class="photo" data-anim="r" style="--d:.42s;"><img class="photo-img" src="images/d04-tv.jpg" alt="看电视"></div>
+            <div class="photo" data-anim="wipe" style="--d:.28s;"><img class="photo-img" src="images/d04-qinghaihu.jpg" alt="青海湖"></div>
+            <div class="photo" data-anim="tilt" style="--d:.44s;"><img class="photo-img" src="images/d04-tv.jpg" alt="看电视"></div>
           </div>
           <div class="stack" style="gap:14px;">
             <p class="body" data-anim="l" style="--d:.4s; font-size:20px; line-height:1.75;">
@@ -505,7 +510,7 @@
             <p class="body" data-anim="l" style="--d:.52s; font-size:20px; line-height:1.75;">
               但是今天罐罐有了自己的名字，还看了电视！也是幸福的一天！
             </p>
-            <div class="card" data-anim="pop" style="--d:.7s; padding:14px 18px; background:#FFF7DC;">
+            <div class="card" data-anim="zoom" style="--d:.7s; padding:14px 18px; background:#FFF7DC;">
               <span class="kicker" style="font-size:14px; padding:5px 12px; background:var(--teal); color:#fff;">名字的由来</span>
               <p style="margin-top:10px; font-size:15.5px; line-height:1.7; color:var(--ink);">
                 青海的酸奶很好喝，酸奶装在小罐子里——酸奶吃完了，只剩下一只罐子，于是它叫「罐罐」。(而且它长得也真的很像一只罐子呀)
@@ -537,10 +542,10 @@
               <span class="spot-tag" data-anim="pop" style="--d:.8s;"><span class="ico">🌊</span><span class="ds">柴达木盆地的高原盐湖 · 湖面海拔约 3178 米</span></span>
             </div>
             <div class="chat">
-              <div class="chat-row" data-anim="pop" style="--d:.3s;"><div class="chat-avatar"><img src="images/mascot.png" alt="罐罐"></div><div class="chat-bubble">罐罐刚刚去看了小柴旦湖</div></div>
-              <div class="chat-row" data-anim="pop" style="--d:.42s;"><div class="chat-avatar"><img src="images/mascot.png" alt="罐罐"></div><div class="chat-bubble">很美很壮阔</div></div>
+              <div class="chat-row" data-anim="l" style="--d:.3s;"><div class="chat-avatar"><img src="images/mascot.png" alt="罐罐"></div><div class="chat-bubble">罐罐刚刚去看了小柴旦湖</div></div>
+              <div class="chat-row" data-anim="l" style="--d:.42s;"><div class="chat-avatar"><img src="images/mascot.png" alt="罐罐"></div><div class="chat-bubble">很美很壮阔</div></div>
             </div>
-            <div class="photo" data-anim="rise" style="--d:.5s; height:180px; margin-top:auto;"><img class="photo-img" src="images/d05-xiaochaidan.jpg" alt="小柴旦湖"></div>
+            <div class="photo" data-anim="zoom" style="--d:.5s; height:180px; margin-top:auto;"><img class="photo-img" src="images/d05-xiaochaidan.jpg" alt="小柴旦湖"></div>
           </div>
 
           <div class="stack" style="gap:14px;">
@@ -549,12 +554,12 @@
               <span class="spot-tag" data-anim="pop" style="--d:.9s;"><span class="ico">🧂</span><span class="ds">中国最大的盐湖 · 面积约 5856 平方公里</span></span>
             </div>
             <div class="chat">
-              <div class="chat-row" data-anim="pop" style="--d:.5s;"><div class="chat-avatar"><img src="images/mascot.png" alt="罐罐"></div><div class="chat-bubble">兔生值得了</div></div>
-              <div class="chat-row" data-anim="pop" style="--d:.6s;"><div class="chat-avatar"><img src="images/mascot.png" alt="罐罐"></div><div class="chat-bubble">啊啊啊啊啊啊</div></div>
-              <div class="chat-row" data-anim="pop" style="--d:.7s;"><div class="chat-avatar"><img src="images/mascot.png" alt="罐罐"></div><div class="chat-bubble">罐罐超开心今天</div></div>
-              <div class="chat-row" data-anim="pop" style="--d:.8s;"><div class="chat-avatar"><img src="images/mascot.png" alt="罐罐"></div><div class="chat-bubble">哈哈哈哈哈哈</div></div>
+              <div class="chat-row" data-anim="l" style="--d:.5s;"><div class="chat-avatar"><img src="images/mascot.png" alt="罐罐"></div><div class="chat-bubble">兔生值得了</div></div>
+              <div class="chat-row" data-anim="l" style="--d:.6s;"><div class="chat-avatar"><img src="images/mascot.png" alt="罐罐"></div><div class="chat-bubble">啊啊啊啊啊啊</div></div>
+              <div class="chat-row" data-anim="l" style="--d:.7s;"><div class="chat-avatar"><img src="images/mascot.png" alt="罐罐"></div><div class="chat-bubble">罐罐超开心今天</div></div>
+              <div class="chat-row" data-anim="l" style="--d:.8s;"><div class="chat-avatar"><img src="images/mascot.png" alt="罐罐"></div><div class="chat-bubble">哈哈哈哈哈哈</div></div>
             </div>
-            <div class="photo" data-anim="rise" style="--d:.9s; height:180px; margin-top:auto;"><img class="photo-img" src="images/d05-chaerhan.jpg" alt="察尔汗盐湖"></div>
+            <div class="photo" data-anim="tilt" style="--d:.92s; height:180px; margin-top:auto;"><img class="photo-img" src="images/d05-chaerhan.jpg" alt="察尔汗盐湖"></div>
           </div>
         </div>
       </div>
@@ -576,12 +581,12 @@
 
         <div class="duo">
           <div class="stack" style="gap:14px;">
-            <div class="photo" data-anim="r" style="--d:.25s; height:296px;"><img class="photo-img" src="images/d06-yadan.jpg" alt="水上雅丹"></div>
+            <div class="photo" data-anim="roll" style="--d:.25s; height:296px;"><img class="photo-img" src="images/d06-yadan.jpg" alt="水上雅丹"></div>
             <p class="body" data-anim="rise" style="--d:.42s; font-size:19px; line-height:1.7;">水上雅丹，这天气真不好，罐罐不开心了 😕</p>
             <span class="spot-tag" data-anim="pop" style="--d:.72s; align-self:flex-start;"><span class="ico">⛵</span><span class="nm">水上雅丹</span><span class="ds">世界唯一的水上雅丹 ·“戈壁滩上的千岛湖”</span></span>
           </div>
           <div class="stack" style="gap:14px;">
-            <div class="photo" data-anim="l" style="--d:.35s; height:296px;"><img class="photo-img" src="images/d06-feicui.jpg" alt="翡翠湖·蜜蜡湖"></div>
+            <div class="photo" data-anim="rolll" style="--d:.38s; height:296px;"><img class="photo-img" src="images/d06-feicui.jpg" alt="翡翠湖·蜜蜡湖"></div>
             <p class="body" data-anim="rise" style="--d:.52s; font-size:19px; line-height:1.7;">但是下午在翡翠湖里的蜜蜡湖狠狠出片啦！阳光真漂亮，也是替麻麻看了未曾见过的风景了！</p>
             <span class="spot-tag" data-anim="pop" style="--d:.82s; align-self:flex-start;"><span class="ico">💎</span><span class="nm">翡翠湖 · 蜜蜡湖</span><span class="ds">采矿留下的“大地调色盘” · 蜜蜡湖像融化的蜜糖</span></span>
           </div>
@@ -599,12 +604,12 @@
       <div class="split" style="grid-template-columns:1.05fr .95fr; gap:44px; align-items:center;">
         <div class="stack" style="gap:18px;">
           <span class="kicker" data-anim="drop" style="--d:.05s; align-self:flex-start; background:var(--ink); color:#fff;">Day 05 · 9.30</span>
-          <h2 data-anim="rise" style="--d:.15s; font-size:44px;">黑独山</h2>
-          <p class="body" data-anim="rise" style="--d:.3s; font-size:22px; line-height:1.85; max-width:24ch;">像游戏地图一样！总感觉山后面会冒出个 boss，罐罐有点害怕</p>
+          <h2 data-anim="flip" style="--d:.15s; font-size:44px;">黑独山</h2>
+          <p class="body" data-anim="risefar" style="--d:.3s; font-size:22px; line-height:1.85; max-width:24ch;">像游戏地图一样！总感觉山后面会冒出个 boss，罐罐有点害怕</p>
           <span class="spot-tag" data-anim="pop" style="--d:.6s; align-self:flex-start;"><span class="ico">🌑</span><span class="nm">黑独山</span><span class="ds">冷湖的黑色山体 ·“地球上最像月球的地方”</span></span>
         </div>
         <div style="display:grid; place-items:center;">
-          <img data-anim="fade" style="--d:.35s; height:524px; width:auto; max-width:100%; object-fit:contain;
+          <img data-anim="blur" style="--d:.35s; height:524px; width:auto; max-width:100%; object-fit:contain;
             border:4px solid var(--ink); border-radius:24px; box-shadow:12px 14px 0 rgba(30,60,79,.18);"
             src="images/d07-heidushan.jpg" alt="黑独山">
         </div>
@@ -630,13 +635,13 @@
         <div class="duo">
           <div class="stack" style="gap:14px;">
             <div class="chat">
-              <div class="chat-row" data-anim="pop" style="--d:.3s;"><div class="chat-avatar"><img src="images/mascot.png" alt="罐罐"></div><div class="chat-bubble">哈哈哈哈根正苗红</div></div>
-              <div class="chat-row" data-anim="pop" style="--d:.42s;"><div class="chat-avatar"><img src="images/mascot.png" alt="罐罐"></div><div class="chat-bubble">是名小小少先队员了</div></div>
+              <div class="chat-row" data-anim="l" style="--d:.3s;"><div class="chat-avatar"><img src="images/mascot.png" alt="罐罐"></div><div class="chat-bubble">哈哈哈哈根正苗红</div></div>
+              <div class="chat-row" data-anim="l" style="--d:.42s;"><div class="chat-avatar"><img src="images/mascot.png" alt="罐罐"></div><div class="chat-bubble">是名小小少先队员了</div></div>
             </div>
-            <div class="photo" data-anim="rise" style="--d:.5s; height:300px; margin-top:auto;"><img class="photo-img" src="images/d08-mingsha.jpg" alt="鸣沙山日落"></div>
+            <div class="photo" data-anim="tilt" style="--d:.5s; height:300px; margin-top:auto;"><img class="photo-img" src="images/d08-mingsha.jpg" alt="鸣沙山日落"></div>
           </div>
           <div class="stack" style="gap:14px;">
-            <div class="photo" data-anim="l" style="--d:.35s; height:300px;"><img class="photo-img" src="images/d08-flag.jpg" alt="国旗"></div>
+            <div class="photo" data-anim="roll" style="--d:.35s; height:300px;"><img class="photo-img" src="images/d08-flag.jpg" alt="国旗"></div>
             <p class="body" data-anim="rise" style="--d:.58s; font-size:19px; line-height:1.7;">罐罐看了莫高窟，在鸣沙山看了演唱会，真是幸福美满的一天呀！</p>
           </div>
         </div>
@@ -645,7 +650,7 @@
 
     <!-- ============ 9. 10.2 张掖 · 七彩丹霞 ============ -->
     <section class="slide" data-label="10.2 张掖·七彩丹霞">
-      <div class="photo" data-anim="fade" style="--d:.1s; position:absolute; inset:36px; border-radius:26px;">
+      <div class="photo" data-anim="wipe" style="--d:.08s; position:absolute; inset:36px; border-radius:26px;">
         <img class="photo-img" src="images/d09-danxia.jpg" alt="七彩丹霞">
       </div>
       <div class="card" data-anim="l" style="--d:.45s; position:absolute; left:78px; bottom:78px; max-width:520px; padding:26px 30px; z-index:4;">
@@ -674,7 +679,7 @@
         <span class="kicker" data-anim="drop" style="--d:.1s; background:var(--teal); color:#fff;">10.3 · 收官</span>
         <h1 class="shimmer" data-anim="bounce" style="--d:.2s; font-size:62px;">罐罐的旅程就结束啦</h1>
         <p class="body" data-anim="rise" style="--d:.4s; font-size:24px;">接下来罐罐要去西安见麻麻了！</p>
-        <div class="card" data-anim="rise" style="--d:.6s; max-width:62ch; padding:22px 30px; background:#FFF7DC;">
+        <div class="card" data-anim="flip" style="--d:.6s; max-width:62ch; padding:22px 30px; background:#FFF7DC;">
           <p style="font-size:19px; line-height:1.9; color:var(--ink);">to 晨阳：谢谢你~ 这一路上你把我照顾得很好，辛苦啦！我们以后也要经常见面呀~</p>
         </div>
         <span class="kicker" data-anim="drop" style="--d:.85s;">— 完 · 感谢观看 —</span>
@@ -683,16 +688,6 @@
 
     <!-- 幕布（wipe 转场用） -->
     <div id="curtain"><div class="panel"></div><div class="panel"></div><div class="panel"></div><div class="panel"></div></div>
-
-    <!-- 线条扫过（每次切换播放一次） -->
-    <svg id="fxlines" viewBox="0 0 1280 720" preserveAspectRatio="none">
-      <line x1="-200" y1="196" x2="1500" y2="96"  stroke="#2E9BE6"/>
-      <line x1="-200" y1="360" x2="1500" y2="300" stroke="#21C4B5"/>
-      <line x1="-200" y1="500" x2="1500" y2="560" stroke="#FFC93C"/>
-      <circle class="dot" cx="330"  cy="168" r="11" fill="#2E9BE6"/>
-      <circle class="dot" cx="880"  cy="318" r="9"  fill="#21C4B5"/>
-      <circle class="dot" cx="560"  cy="524" r="10" fill="#FFC93C"/>
-    </svg>
 
   </div>
 </div>
@@ -720,7 +715,7 @@
   const bar     = document.getElementById('progress');
   const btnPrev = document.getElementById('prev');
   const btnNext = document.getElementById('next');
-  let idx = 0, busy = false, lineTimer = null, wipeTimer = null;
+  let idx = 0, busy = false, wipeTimer = null;
 
   /* ---------- 1) 自适应缩放：固定 16:9 等比 fit ---------- */
   function fit(){
@@ -740,14 +735,7 @@
   });
   const dots = Array.from(dotsBox.children);
 
-  /* ---------- 3) 线条扫过（每次切换重播一次） ---------- */
-  function playLines(){
-    stage.classList.remove('playfx'); void stage.offsetWidth; stage.classList.add('playfx');
-    clearTimeout(lineTimer);
-    lineTimer = setTimeout(()=> stage.classList.remove('playfx'), 950);
-  }
-
-  /* ---------- 4) 切换幻灯片 ----------
+  /* ---------- 3) 切换幻灯片 ----------
         dir: 'next' | 'prev'  →  决定方向相关动画 */
   function swap(outS, inS, dir){
     // 进入的页：重置子元素动画后重新激活
@@ -762,7 +750,6 @@
       outS.classList.add('leaving');
       setTimeout(()=> outS.classList.remove('leaving'), 720);
     }
-    playLines();
   }
 
   function runWipe(outS, inS, dir){
@@ -775,7 +762,6 @@
       inS.dataset.dir = dir; inS.classList.add('active');
       stage.classList.remove('curtain-in');
       stage.classList.add('curtain-out');
-      playLines();
       wipeTimer = setTimeout(()=> stage.classList.remove('curtain-out'), 900);
     }, 470);
   }
