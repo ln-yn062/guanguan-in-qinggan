@@ -780,6 +780,10 @@
     }, 470);
   }
 
+  /* 转场效果：4 种按页自动轮换（每次真正翻页换下一种，循环使用） */
+  const FX_ORDER = ['slide','push','zoom','wipe'];
+  let fxStep = 0;
+
   function go(n){
     n = Math.max(0, Math.min(slides.length-1, n));
     if(n===idx || busy) return;
@@ -788,10 +792,14 @@
     idx = n;
     updateUI(dir);
 
+    // 轮到下一种转场
+    stage.dataset.fx = FX_ORDER[fxStep % FX_ORDER.length];
+    fxStep++;
+
     const fx = stage.dataset.fx;
     if(fx === 'wipe'){
       busy = true; runWipe(outS, inS, dir);
-      setTimeout(()=> busy = false, 900);
+      setTimeout(()=> busy = false, 1000);
     } else {
       busy = true; swap(outS, inS, dir);
       setTimeout(()=> busy = false, 700);

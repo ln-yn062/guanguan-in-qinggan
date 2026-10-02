@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""端到端验证 index.html：页数、图片加载、字体、翻页竞态、触屏、截图。
+"""端到端验证 index.html：页数、图片加载、字体、翻页竞态、转场轮换、触屏、音频、截图。
 
 用法： python scripts/verify.py
 """
@@ -25,6 +25,26 @@ def ok(cond, msg):
     print(("  PASS  " if cond else "  FAIL  ") + msg)
     if not cond:
         FAILS.append(msg)
+
+
+async def settle(pg, timeout=6000):
+    """等一次翻页转场彻底结束：无离场页、幕布收放完毕。
+
+    比固定 sleep 可靠 —— 无论这页用的是 slide/push/zoom/wipe 都能正确等到位。
+    """
+    await pg.wait_for_function(
+        "()=>{const s=document.getElementById('stage');"
+        "return !document.querySelector('.slide.leaving')"
+        "&& !s.classList.contains('curtain-in') && !s.classList.contains('curtain-out');}",
+        timeout=timeout)
+
+
+async def wait_vis(pg, sel, min_o=0.99, timeout=5000):
+    """等某元素入场动画结束（opacity 达到 min_o）。"""
+    await pg.wait_for_function(
+        "a=>{const e=document.querySelector(a.s);"
+        "return !e || parseFloat(getComputedStyle(e).opacity)>=a.m;}",
+        arg={"s": sel, "m": min_o}, timeout=timeout)
 
 
 async def main():
@@ -56,23 +76,23 @@ async def main():
         ok(not errs, f"pageerror / console error = {errs or 'none'}")
 
         print("④ 翻页竞态：连按 5 次右箭头")
-        await pg.keyboard.press("Home"); await pg.wait_for_timeout(900)
+        await pg.keyboard.press("Home"); await settle(pg)
         for _ in range(5):
             await pg.keyboard.press("ArrowRight")
-        await pg.wait_for_timeout(1400)
+        await settle(pg)
         act = await pg.eval_on_selector_all(".slide.active", "els=>els.length")
         lv = await pg.eval_on_selector_all(".slide.leaving", "els=>els.length")
         ok(act == 1 and lv == 0, f"连按后 active={act}（应 1）、leaving={lv}（应 0）")
 
         print("④b 逐页按下可达末页")
-        await pg.keyboard.press("Home"); await pg.wait_for_timeout(900)
+        await pg.keyboard.press("Home"); await settle(pg)
         for _ in range(9):
-            await pg.keyboard.press("ArrowRight"); await pg.wait_for_timeout(760)
+            await pg.keyboard.press("ArrowRight"); await settle(pg)
         last = await pg.eval_on_selector_all(".slide.active", "els=>els.map(e=>e.dataset.label)")
         ok(len(last) == 1 and last[0] == "旅程结束", f"末页 active={last}")
 
         print("⑤ 触屏滑动只前进一页")
-        await pg.keyboard.press("Home"); await pg.wait_for_timeout(900)
+        await pg.keyboard.press("Home"); await settle(pg)
         await pg.evaluate("""()=>{
           const el=document.getElementById('stage'); const r=el.getBoundingClientRect();
           const y=r.top+r.height/2;
@@ -80,17 +100,17 @@ async def main():
           el.dispatchEvent(new TouchEvent('touchstart',{bubbles:true,changedTouches:[mk(r.left+r.width*0.75)]}));
           el.dispatchEvent(new TouchEvent('touchend',  {bubbles:true,changedTouches:[mk(r.left+r.width*0.25)]}));
         }""")
-        await pg.wait_for_timeout(1300)
+        await settle(pg)
         sw = await pg.eval_on_selector_all(".slide.active", "els=>els.map(e=>e.dataset.label)")
         ok(len(sw) == 1 and sw[0] == "献词 · 给晨阳", f"swipe 后 active={sw}（应为第 2 页）")
 
         print("⑥ 逐页截图 + 标题可见性")
         bad_sh = []
         for i in range(10):
-            await pg.keyboard.press("Home"); await pg.wait_for_timeout(800)
+            await pg.keyboard.press("Home"); await settle(pg)
             for _ in range(i):
-                await pg.keyboard.press("ArrowRight"); await pg.wait_for_timeout(760)
-            await pg.wait_for_timeout(900)
+                await pg.keyboard.press("ArrowRight"); await settle(pg)
+            await wait_vis(pg, ".slide.active .shimmer")
             label = await pg.eval_on_selector(".slide.active", "e=>e.dataset.label")
             sh = await pg.eval_on_selector_all(
                 ".slide.active .shimmer",
@@ -103,7 +123,8 @@ async def main():
         ok(not bad_sh, "shimmer 标题均可见（opacity/宽度正常）" + (f"，异常: {bad_sh}" if bad_sh else ""))
 
         print("⑦ 徽章 hover 不消失（wiggle 不得覆盖入场动画的 opacity）")
-        await pg.keyboard.press("Home"); await pg.wait_for_timeout(1000)
+        await pg.keyboard.press("Home"); await settle(pg)
+        await wait_vis(pg, ".slide.active .kicker.wiggle")
         hover_bad = None
         try:
             await pg.hover(".slide.active .kicker.wiggle")
@@ -160,6 +181,15 @@ async def main():
           pressed:document.getElementById('bgm').getAttribute('aria-pressed')})""")
         ok(clicked_pause is True and st2["paused"] is True and (not st2["on"]) and st2["pressed"] == "false",
            f"再次点击 → 暂停：{st2}")
+
+        print("⑩ 转场轮换：连续翻页依次用到 4 种 data-fx")
+        await pg.keyboard.press("Home"); await settle(pg)
+        seq = []
+        for _ in range(4):
+            await pg.keyboard.press("ArrowRight"); await settle(pg)
+            seq.append(await pg.eval_on_selector("#stage", "e=>e.dataset.fx"))
+        ok(len(set(seq)) == 4 and set(seq) == {"slide", "push", "zoom", "wipe"},
+           f"连续 4 次翻页的转场 = {seq}（应覆盖 slide/push/zoom/wipe）")
 
         print("③b 无报错（全程）")
         ok(not errs, f"pageerror / console error = {errs or 'none'}")
