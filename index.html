@@ -235,7 +235,7 @@
     padding:8px 18px; border-radius:999px;
     background:var(--yellow); border:3px solid var(--ink); box-shadow:4px 4px 0 var(--ink);
   }
-  p.body{ font-size:21px; line-height:1.9; color:var(--ink-soft); }
+  p.body{ font-size:24px; line-height:1.9; color:var(--ink-soft); }
 
   .shimmer{
     background:linear-gradient(100deg,var(--blue-deep),var(--teal),var(--green-deep),var(--blue-deep));
@@ -274,7 +274,7 @@
   .photo .photo-img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; }
   .photo .ph-ico{ font-size:52px; line-height:1; filter:drop-shadow(0 3px 6px rgba(0,0,0,.25)); }
   .photo .ph-txt{
-    font-family:'PingFang SC','Microsoft YaHei',system-ui,sans-serif; font-weight:700; font-size:16px; letter-spacing:2px;
+    font-family:'PingFang SC','Microsoft YaHei',system-ui,sans-serif; font-weight:700; font-size:18px; letter-spacing:2px;
     background:rgba(30,60,79,.55); padding:4px 14px; border-radius:999px; justify-self:center;
   }
   .tint-blue { background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.5) 0 14px,rgba(255,255,255,.15) 14px 28px),linear-gradient(135deg,var(--blue),var(--blue-deep)); }
@@ -284,7 +284,7 @@
 
   .polaroid{ background:#fff; padding:12px 12px 48px; border:3px solid var(--ink); border-radius:14px; box-shadow:10px 12px 0 rgba(30,60,79,.18); }
   .polaroid .photo{ height:100%; border-radius:8px; }
-  .polaroid .cap{ font-size:16px; color:var(--ink-soft); text-align:center; margin-top:10px; }
+  .polaroid .cap{ font-size:18px; color:var(--ink-soft); text-align:center; margin-top:10px; }
 
   /* ---- 漂浮装饰 ---- */
   .deco{ position:absolute; pointer-events:none; user-select:none; z-index:3; }
@@ -364,7 +364,7 @@
   .strip figure{ display:flex; flex-direction:column; gap:12px; align-items:center; }
   .strip img{ height:272px; width:auto; max-width:620px; object-fit:cover;
     border:4px solid var(--ink); border-radius:20px; box-shadow:8px 10px 0 rgba(30,60,79,.18); background:#fff; }
-  .strip .cap{ font-size:16px; color:var(--ink-soft); text-align:center; line-height:1.65; }
+  .strip .cap{ font-size:18px; color:var(--ink-soft); text-align:center; line-height:1.65; }
 
   /* ---- 双栏聊天 / 并排两图 ---- */
   .dual-chat{ display:grid; grid-template-columns:1fr 1fr; gap:34px; align-items:stretch; width:100%; }
@@ -379,7 +379,7 @@
     background:#fff; overflow:hidden; flex:none; box-shadow:3px 3px 0 rgba(30,60,79,.22); }
   .chat-avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
   .chat-bubble{ position:relative; background:#fff; border:3px solid var(--ink);
-    border-radius:16px 16px 16px 4px; padding:9px 15px; font-size:17px; color:var(--ink);
+    border-radius:16px 16px 16px 4px; padding:9px 15px; font-size:19px; color:var(--ink);
     box-shadow:4px 4px 0 rgba(30,60,79,.16); }
   .chat-bubble::before{ content:""; position:absolute; left:-14px; bottom:9px; width:0; height:0;
     border-top:8px solid transparent; border-bottom:8px solid transparent; border-right:14px solid var(--ink); }
@@ -403,7 +403,7 @@
   }
 
   /* ---- 景点小标签（贴纸风） ---- */
-  .spot-tag{ display:inline-flex; align-items:center; gap:7px; font-size:15px; color:var(--ink);
+  .spot-tag{ display:inline-flex; align-items:center; gap:7px; font-size:17px; color:var(--ink);
     background:#fff; border:3px solid var(--ink); border-radius:999px; padding:5px 14px;
     box-shadow:4px 4px 0 var(--ink); }
   .spot-tag .ico{ font-size:16px; line-height:1; }
@@ -483,7 +483,7 @@
       <div class="stack" style="width:100%; align-items:center; text-align:center; justify-content:center; gap:26px;">
         <span class="kicker" data-anim="drop" style="--d:.1s;">献 词</span>
         <h1 class="shimmer" data-anim="bounce" style="--d:.25s; font-size:72px;">给 晨阳</h1>
-        <p class="body" data-anim="blur" style="--d:.5s; max-width:38ch; font-size:24px;">
+        <p class="body" data-anim="blur" style="--d:.5s; max-width:38ch; font-size:27px;">
           谢谢你，把罐罐从店里带走，<br>又带着它走了这么远的路，<br>罐罐真是只又幸运又幸福的小鼠兔呀！<br>很开心能遇见你！
         </p>
         <span class="kicker" data-anim="pop" style="--d:.8s; background:var(--teal); color:#fff;">海诺 敬上</span>
@@ -544,15 +544,15 @@
             <div class="photo" data-anim="tilt" style="--d:.44s;"><img class="photo-img" src="images/d04-tv.jpg" alt="看电视"></div>
           </div>
           <div class="stack" style="gap:14px;">
-            <p class="body" data-anim="l" style="--d:.4s; font-size:20px; line-height:1.75;">
+            <p class="body" data-anim="l" style="--d:.4s; font-size:23px; line-height:1.75;">
               罐罐去了青海湖和茶卡盐湖，但是天气不好，罐罐连出来的机会都没有 (´；ω；`)
             </p>
-            <p class="body" data-anim="l" style="--d:.52s; font-size:20px; line-height:1.75;">
+            <p class="body" data-anim="l" style="--d:.52s; font-size:23px; line-height:1.75;">
               但是今天罐罐有了自己的名字，还看了电视！也是幸福的一天！
             </p>
             <div class="card" data-anim="zoom" style="--d:.7s; padding:14px 18px; background:#FFF7DC;">
               <span class="kicker" style="font-size:14px; padding:5px 12px; background:var(--teal); color:#fff;">名字的由来</span>
-              <p style="margin-top:10px; font-size:15.5px; line-height:1.7; color:var(--ink);">
+              <p style="margin-top:10px; font-size:18px; line-height:1.7; color:var(--ink);">
                 青海的酸奶很好喝，酸奶装在小罐子里——酸奶吃完了，只剩下一只罐子，于是它叫「罐罐」。(而且它长得也真的很像一只罐子呀)
               </p>
             </div>
@@ -622,12 +622,12 @@
         <div class="duo">
           <div class="stack" style="gap:14px;">
             <div class="photo" data-anim="roll" style="--d:.25s; height:296px;"><img class="photo-img" src="images/d06-yadan.jpg" alt="水上雅丹"></div>
-            <p class="body" data-anim="rise" style="--d:.42s; font-size:19px; line-height:1.7;">水上雅丹，这天气真不好，罐罐不开心了 😕</p>
+            <p class="body" data-anim="rise" style="--d:.42s; font-size:22px; line-height:1.7;">水上雅丹，这天气真不好，罐罐不开心了 😕</p>
             <span class="spot-tag" data-anim="pop" style="--d:.72s; align-self:flex-start;"><span class="ico">⛵</span><span class="nm">水上雅丹</span><span class="ds">世界唯一的水上雅丹 ·“戈壁滩上的千岛湖”</span></span>
           </div>
           <div class="stack" style="gap:14px;">
             <div class="photo" data-anim="rolll" style="--d:.38s; height:296px;"><img class="photo-img" src="images/d06-feicui.jpg" alt="翡翠湖·蜜蜡湖"></div>
-            <p class="body" data-anim="rise" style="--d:.52s; font-size:19px; line-height:1.7;">但是下午在翡翠湖里的蜜蜡湖狠狠出片啦！阳光真漂亮，也是替麻麻看了未曾见过的风景了！</p>
+            <p class="body" data-anim="rise" style="--d:.52s; font-size:22px; line-height:1.7;">但是下午在翡翠湖里的蜜蜡湖狠狠出片啦！阳光真漂亮，也是替麻麻看了未曾见过的风景了！</p>
             <span class="spot-tag" data-anim="pop" style="--d:.82s; align-self:flex-start;"><span class="ico">💎</span><span class="nm">翡翠湖 · 蜜蜡湖</span><span class="ds">采矿留下的“大地调色盘” · 蜜蜡湖像融化的蜜糖</span></span>
           </div>
         </div>
@@ -645,7 +645,7 @@
         <div class="stack" style="gap:18px;">
           <span class="kicker" data-anim="drop" style="--d:.05s; align-self:flex-start; background:var(--ink); color:#fff;">Day 05 · 9.30</span>
           <h2 data-anim="flip" style="--d:.15s; font-size:44px;">黑独山</h2>
-          <p class="body" data-anim="risefar" style="--d:.3s; font-size:22px; line-height:1.85; max-width:24ch;">像游戏地图一样！总感觉山后面会冒出个 boss，罐罐有点害怕</p>
+          <p class="body" data-anim="risefar" style="--d:.3s; font-size:25px; line-height:1.85; max-width:24ch;">像游戏地图一样！总感觉山后面会冒出个 boss，罐罐有点害怕</p>
           <span class="spot-tag" data-anim="pop" style="--d:.6s; align-self:flex-start;"><span class="ico">🌑</span><span class="nm">黑独山</span><span class="ds">冷湖的黑色山体 ·“地球上最像月球的地方”</span></span>
         </div>
         <div style="position:relative; display:grid; place-items:center;">
@@ -694,7 +694,7 @@
           </div>
           <div class="stack" style="gap:14px;">
             <div class="photo" data-anim="roll" style="--d:.35s; height:300px;"><img class="photo-img" src="images/d08-flag.jpg" alt="国旗"></div>
-            <p class="body" data-anim="rise" style="--d:.58s; font-size:19px; line-height:1.7;">罐罐看了莫高窟，在鸣沙山看了演唱会，真是幸福美满的一天呀！</p>
+            <p class="body" data-anim="rise" style="--d:.58s; font-size:22px; line-height:1.7;">罐罐看了莫高窟，在鸣沙山看了演唱会，真是幸福美满的一天呀！</p>
           </div>
         </div>
       </div>
@@ -708,7 +708,7 @@
       <div class="card" data-anim="l" style="--d:.45s; position:absolute; left:78px; bottom:78px; max-width:520px; padding:26px 30px; z-index:4;">
         <span class="kicker" style="background:var(--green-deep); color:#fff;">Day 07 · 10.2</span>
         <h2 style="font-size:36px; margin:12px 0 8px;">张掖 · 七彩丹霞</h2>
-        <p class="body" style="font-size:19px;">罐罐今天去了张掖，看了七彩丹霞。<br>好多人！</p>
+        <p class="body" style="font-size:22px;">罐罐今天去了张掖，看了七彩丹霞。<br>好多人！</p>
       </div>
       <span class="spot-tag" data-anim="pop" style="--d:.85s; position:absolute; right:70px; top:70px; z-index:4;"><span class="ico">🌈</span><span class="nm">七彩丹霞</span><span class="ds">张掖 · 大地的调色盘</span></span>
       <!-- 照片上散落的小颜文字 / emoji -->
@@ -737,9 +737,9 @@
       <div class="stack" style="width:100%; align-items:center; text-align:center; justify-content:center; gap:22px;">
         <span class="kicker" data-anim="drop" style="--d:.1s; background:var(--teal); color:#fff;">10.3 · 收官</span>
         <h1 class="shimmer" data-anim="bounce" style="--d:.2s; font-size:62px;">罐罐的旅程就结束啦</h1>
-        <p class="body" data-anim="rise" style="--d:.4s; font-size:24px;">接下来罐罐要去西安见麻麻了！</p>
+        <p class="body" data-anim="rise" style="--d:.4s; font-size:27px;">接下来罐罐要去西安见麻麻了！</p>
         <div class="card" data-anim="flip" style="--d:.6s; max-width:62ch; padding:22px 30px; background:#FFF7DC;">
-          <p style="font-size:19px; line-height:1.9; color:var(--ink);">to 晨阳：谢谢你~ 这一路上你把我照顾得很好，辛苦啦！我们以后也要经常见面呀~</p>
+          <p style="font-size:21px; line-height:1.9; color:var(--ink);">to 晨阳：谢谢你~ 这一路上你把我照顾得很好，辛苦啦！我们以后也要经常见面呀~</p>
         </div>
         <span class="kicker" data-anim="drop" style="--d:.85s;">— 完 · 感谢观看 —</span>
       </div>
@@ -788,7 +788,8 @@
   function fit(){
     // 触屏 + 竖屏 → 提示把手机横过来看
     document.documentElement.classList.toggle('show-rotate', isTouch && innerHeight > innerWidth);
-    const pad = 36;
+    // 手机屏小，留白收窄让舞台铺得更满、字更大
+    const pad = Math.min(innerWidth, innerHeight) < 560 ? 12 : 36;
     const scale = Math.min((innerWidth - pad*2)/1280, (innerHeight - pad*2)/720);
     stage.style.transform = 'translate(-50%,-50%) scale(' + scale + ')';
   }

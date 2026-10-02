@@ -257,6 +257,23 @@ async def main():
         ok(res["竖屏"]["hint"] is True, "竖屏弹出「请横屏」提示层")
         ok(res["横屏"]["hint"] is False, "横屏不显示「请横屏」提示层")
 
+        print("⑮ 手机横屏下正文字号（实际渲染到屏上的像素）足够大")
+        mctx = await b.new_context(viewport={"width": 844, "height": 390},
+                                   is_mobile=True, has_touch=True, device_scale_factor=2)
+        mpg = await mctx.new_page()
+        await mpg.goto(URL)
+        await mpg.wait_for_timeout(900)
+        eff = await mpg.evaluate("""()=>{
+          const st=document.getElementById('stage');
+          const sc=new DOMMatrix(getComputedStyle(st).transform).a;
+          const sizes=[...document.querySelectorAll('p.body')]
+            .map(e=>parseFloat(getComputedStyle(e).fontSize));
+          return {sc:sc, min:Math.min(...sizes), eff:Math.min(...sizes)*sc};}""")
+        await mctx.close()
+        ok(eff["eff"] >= 11.0,
+           f"手机横屏正文实际字号 = {eff['eff']:.1f}px"
+           f"（最小 {eff['min']:.0f}px × 舞台缩放 {eff['sc']:.3f}）应 ≥11.0")
+
         print("③b 无报错（全程）")
         ok(not errs, f"pageerror / console error = {errs or 'none'}")
 
