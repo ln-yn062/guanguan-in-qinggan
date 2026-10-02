@@ -102,6 +102,21 @@ async def main():
             print(f"  _shots/{i+1:02d}.png  ({label})")
         ok(not bad_sh, "shimmer 标题均可见（opacity/宽度正常）" + (f"，异常: {bad_sh}" if bad_sh else ""))
 
+        print("⑦ 徽章 hover 不消失（wiggle 不得覆盖入场动画的 opacity）")
+        await pg.keyboard.press("Home"); await pg.wait_for_timeout(1000)
+        hover_bad = None
+        try:
+            await pg.hover(".slide.active .kicker.wiggle")
+            await pg.wait_for_timeout(300)
+            o = await pg.eval_on_selector(
+                ".slide.active .kicker.wiggle", "e=>parseFloat(getComputedStyle(e).opacity)")
+            if o < 0.9:
+                hover_bad = f"opacity={o}"
+        except Exception as e:
+            hover_bad = str(e)
+        ok(hover_bad is None, "hover 后徽章 opacity > 0.9"
+           + (f"，异常: {hover_bad}" if hover_bad else ""))
+
         print("③b 无报错（全程）")
         ok(not errs, f"pageerror / console error = {errs or 'none'}")
 

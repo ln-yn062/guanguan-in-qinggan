@@ -269,6 +269,8 @@
   @keyframes sway{ 0%,100%{ transform:rotate(-5deg) } 50%{ transform:rotate(5deg) } }
   .wiggle:hover{ animation:wiggle .5s ease-in-out; }
   @keyframes wiggle{ 0%,100%{transform:rotate(0)} 25%{transform:rotate(-6deg)} 75%{transform:rotate(6deg)} }
+  /* 悬停动画会覆盖入场动画；给回 opacity 兜底，避免 hover 时徽章消失 */
+  .wiggle[data-anim]{ opacity:1; }
 
   .spark{ position:absolute; width:9px; height:9px; border-radius:50%; background:var(--yellow);
     box-shadow:0 0 10px rgba(255,201,60,.9); animation: riseUp linear infinite; opacity:0; }
