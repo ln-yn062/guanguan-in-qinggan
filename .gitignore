@@ -11,3 +11,8 @@
 _shots/
 _tmp/
 _shot*.*
+
+# 开发草稿（不入站；文案已固化在 index.html 与 docs/superpowers/specs/ 里）
+/template.html
+/欢迎.md
+/罐罐旅行日记I 青甘2026.9.26-2026.10.3.md
