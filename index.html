@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>罐罐的大西北旅行</title>
+<style>
+  /* =========================================================
+     罐罐的大西北旅行 —— 纯静态可翻页网页
+     配色：蓝(青海湖) · 青 · 绿(草原) · 黄(油菜花/沙漠)
+     ========================================================= */
+
+  :root{
+    --blue:      #2E9BE6;   /* 青海湖蓝 */
+    --blue-deep: #1C6DBE;   /* 深湖蓝 */
+    --teal:      #21C4B5;   /* 青 */
+    --green:     #6FD16F;   /* 草原绿 */
+    --green-deep:#3FA84A;   /* 深草绿 */
+    --yellow:    #FFC93C;   /* 油菜花黄 */
+    --sun:       #FFB020;   /* 沙金 */
+    --cream:     #F4FBF0;
+    --paper:     #FBFDF6;
+    --ink:       #1E3C4F;   /* 深湖墨（文字） */
+    --ink-soft:  #55707F;
+
+    --radius: 34px;
+    --radius-sm: 22px;
+    --shadow: 0 18px 42px rgba(30,60,79,.18);
+    --outline: 4px solid var(--ink);
+  }
+
+  *{ margin:0; padding:0; box-sizing:border-box; }
+
+  html,body{
+    height:100%; overflow:hidden;
+    font-family:'PingFang SC','Microsoft YaHei',system-ui,sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(circle at 10% 15%, rgba(255,201,60,.60), transparent 42%),
+      radial-gradient(circle at 90% 10%, rgba(46,155,230,.55), transparent 46%),
+      radial-gradient(circle at 85% 90%, rgba(111,209,111,.50), transparent 46%),
+      radial-gradient(circle at 15% 88%, rgba(33,196,181,.45), transparent 46%),
+      linear-gradient(135deg,#EAF7FF,#E6FBEF 42%,#FFF7DC 78%,#EAF7FF);
+    background-attachment: fixed;
+  }
+  body::before{
+    content:""; position:fixed; inset:-20%; pointer-events:none; z-index:0;
+    background:
+      radial-gradient(circle at 30% 40%, rgba(46,155,230,.22), transparent 34%),
+      radial-gradient(circle at 70% 65%, rgba(255,201,60,.22), transparent 34%),
+      radial-gradient(circle at 55% 20%, rgba(111,209,111,.20), transparent 34%);
+    animation: drift 26s ease-in-out infinite alternate;
+  }
+  @keyframes drift{
+    0%  { transform:translate(0,0)    scale(1); }
+    50% { transform:translate(3%,-2%) scale(1.08); }
+    100%{ transform:translate(-3%,2%) scale(1.04); }
+  }
+
+  /* ================= 舞台：固定 16:9，等比缩放居中 ================= */
+  #viewport{ position:fixed; inset:0; display:grid; place-items:center; overflow:hidden; z-index:1; }
+  #stage{
+    position:relative; width:1280px; height:720px;
+    transform-origin:center center;
+    border-radius:var(--radius);
+    background:var(--paper);
+    box-shadow:var(--shadow), 0 0 0 8px rgba(255,255,255,.7);
+    overflow:hidden;
+  }
+
+  /* ---- 舞台内背景风景（不随幻灯片移动） ---- */
+  .scenery{ position:absolute; inset:0; z-index:0; pointer-events:none; }
+  .sun{
+    position:absolute; right:96px; top:66px; width:118px; height:118px; border-radius:50%;
+    background:radial-gradient(circle at 38% 35%, #FFE9A8, var(--yellow) 55%, var(--sun));
+    box-shadow:0 0 0 12px rgba(255,201,60,.28), 0 0 60px rgba(255,176,32,.5);
+    animation: pulse 5.5s ease-in-out infinite;
+  }
+  @keyframes pulse{ 0%,100%{ transform:scale(1) } 50%{ transform:scale(1.07) } }
+  .mtn{ position:absolute; left:0; right:0; bottom:0; height:190px; }
+
+  /* ================= 幻灯片 ================= */
+  .slide{
+    position:absolute; inset:0; padding:56px 68px; z-index:2;
+    display:flex; opacity:0; visibility:hidden; pointer-events:none;
+  }
+  .slide.active{ opacity:1; visibility:visible; pointer-events:auto; z-index:2; }
+  /* 正在离场的旧页：保持可见，交给动画收尾 */
+  .slide.leaving{ opacity:1; visibility:visible; pointer-events:none; z-index:1; }
+
+  /* ---- 元素入场动画（元素级错峰）：data-anim + --d 延迟 ---- */
+  @keyframes rise    { from{opacity:0; transform:translateY(30px)} to{opacity:1; transform:none} }
+  @keyframes pop     { 0%{opacity:0; transform:scale(.55) rotate(-7deg)} 65%{transform:scale(1.07) rotate(2.5deg)} 100%{opacity:1; transform:scale(1) rotate(0)} }
+  @keyframes fadeIn  { from{opacity:0} to{opacity:1} }
+  @keyframes slideInR{ from{opacity:0; transform:translateX(64px)}  to{opacity:1; transform:none} }
+  @keyframes slideInL{ from{opacity:0; transform:translateX(-64px)} to{opacity:1; transform:none} }
+  @keyframes drop    { 0%{opacity:0; transform:translateY(-34px) rotate(-4deg)} 70%{transform:translateY(4px) rotate(1deg)} 100%{opacity:1; transform:none} }
+  @keyframes bounceUp{ 0%{opacity:0; transform:scale(.6)} 100%{opacity:1; transform:none} }
+
+  [data-anim]{ opacity:0; }
+  [data-anim="rise"]  { animation: rise    .75s cubic-bezier(.22,1,.36,1) var(--d,0s) both; }
+  [data-anim="pop"]   { animation: pop     .8s  cubic-bezier(.34,1.56,.64,1) var(--d,0s) both; }
+  [data-anim="fade"]  { animation: fadeIn  .7s  ease var(--d,0s) both; }
+  [data-anim="r"]     { animation: slideInR .8s cubic-bezier(.22,1,.36,1) var(--d,0s) both; }
+  [data-anim="l"]     { animation: slideInL .8s cubic-bezier(.22,1,.36,1) var(--d,0s) both; }
+  [data-anim="drop"]  { animation: drop    .8s  cubic-bezier(.34,1.56,.64,1) var(--d,0s) both; }
+  [data-anim="bounce"]{ animation: bounceUp .9s cubic-bezier(.34,1.6,.5,1) var(--d,0s) both; }
+
+  /* ---- 小星星装饰：切换页面时弹出 + 持续闪烁 ---- */
+  .star{
+    position:absolute; pointer-events:none; user-select:none; z-index:3;
+    font-size:26px; line-height:1; opacity:0;
+    filter:drop-shadow(0 0 6px rgba(255,201,60,.9));
+  }
+  .slide.active .star{
+    animation: starPop .55s cubic-bezier(.34,1.6,.5,1) var(--d,0s) both,
+               starTwinkle 2.6s ease-in-out calc(var(--d,0s) + .55s) infinite;
+  }
+  @keyframes starPop{ 0%{opacity:0; transform:scale(0) rotate(-70deg)} 70%{transform:scale(1.3) rotate(10deg)} 100%{opacity:1; transform:scale(1) rotate(0)} }
+  @keyframes starTwinkle{ 0%,100%{opacity:1; transform:scale(1) rotate(0)} 50%{opacity:.5; transform:scale(.8) rotate(20deg)} }
+
+  /* =========================================================
+     转场特效系统 —— 通过 #stage[data-fx] 切换
+     ========================================================= */
+
+  /* ---- FX: slide（整页方向滑动：新页从滑动方向进入，旧页反向退出） ---- */
+  @keyframes fxSlideInR { from{opacity:0; transform:translateX(150px)} to{opacity:1; transform:none} }
+  @keyframes fxSlideInL { from{opacity:0; transform:translateX(-150px)} to{opacity:1; transform:none} }
+  @keyframes fxSlideOutL{ from{opacity:1; transform:none} to{opacity:0; transform:translateX(-150px)} }
+  @keyframes fxSlideOutR{ from{opacity:1; transform:none} to{opacity:0; transform:translateX(150px)} }
+  #stage[data-fx="slide"] .slide.active[data-dir="next"]{ animation: fxSlideInR  .68s cubic-bezier(.22,1,.36,1) both; }
+  #stage[data-fx="slide"] .slide.active[data-dir="prev"]{ animation: fxSlideInL  .68s cubic-bezier(.22,1,.36,1) both; }
+  #stage[data-fx="slide"] .slide.leaving[data-dir="next"]{ animation: fxSlideOutL .68s cubic-bezier(.22,1,.36,1) both; }
+  #stage[data-fx="slide"] .slide.leaving[data-dir="prev"]{ animation: fxSlideOutR .68s cubic-bezier(.22,1,.36,1) both; }
+
+  /* ---- FX: push（整页横向推挤：两页同时平移，像 PPT「推送」） ---- */
+  @keyframes fxPushInR { from{transform:translateX(100%)} to{transform:none} }
+  @keyframes fxPushInL { from{transform:translateX(-100%)} to{transform:none} }
+  @keyframes fxPushOutL{ from{transform:none} to{transform:translateX(-100%)} }
+  @keyframes fxPushOutR{ from{transform:none} to{transform:translateX(100%)} }
+  #stage[data-fx="push"] .slide.active[data-dir="next"]{ animation: fxPushInR  .6s cubic-bezier(.65,0,.35,1) both; }
+  #stage[data-fx="push"] .slide.active[data-dir="prev"]{ animation: fxPushInL  .6s cubic-bezier(.65,0,.35,1) both; }
+  #stage[data-fx="push"] .slide.leaving[data-dir="next"]{ animation: fxPushOutL .6s cubic-bezier(.65,0,.35,1) both; }
+  #stage[data-fx="push"] .slide.leaving[data-dir="prev"]{ animation: fxPushOutR .6s cubic-bezier(.65,0,.35,1) both; }
+
+  /* ---- FX: zoom（整页缩放推进） ---- */
+  @keyframes fxZoomIn { from{opacity:0; transform:scale(.86)} to{opacity:1; transform:scale(1)} }
+  @keyframes fxZoomOut{ from{opacity:1; transform:scale(1)} to{opacity:0; transform:scale(1.12)} }
+  #stage[data-fx="zoom"] .slide.active { animation: fxZoomIn  .7s cubic-bezier(.22,1,.36,1) both; }
+  #stage[data-fx="zoom"] .slide.leaving{ animation: fxZoomOut .7s cubic-bezier(.22,1,.36,1) both; }
+
+  /* ---- FX: reveal（揭幕：照片用 clip-path 从左向右擦出，文字线条先画） ---- */
+  @keyframes fxReveal{ from{ clip-path:inset(0 100% 0 0) } to{ clip-path:inset(0 0 0 0) } }
+  #stage[data-fx="reveal"] .slide.active .photo{
+    animation: fxReveal .9s cubic-bezier(.65,0,.35,1) var(--d,0s) both;
+  }
+  #stage[data-fx="reveal"] .slide.leaving{ animation: fadeOutQuick .3s ease both; }
+  @keyframes fadeOutQuick{ from{opacity:1} to{opacity:0} }
+
+  /* ---- 幕布（wipe 转场用）：由 JS 触发 ---- */
+  #curtain{ position:absolute; inset:0; z-index:40; display:flex; pointer-events:none; }
+  #curtain .panel{
+    flex:1; transform:scaleY(0); transform-origin:bottom center;
+    transition:transform .44s cubic-bezier(.66,0,.34,1);
+  }
+  #curtain .panel:nth-child(1){ background:var(--blue);   transition-delay:0s;    }
+  #curtain .panel:nth-child(2){ background:var(--teal);   transition-delay:.06s;  }
+  #curtain .panel:nth-child(3){ background:var(--green);  transition-delay:.12s;  }
+  #curtain .panel:nth-child(4){ background:var(--yellow); transition-delay:.18s;  }
+  #stage.curtain-in  #curtain .panel{ transform:scaleY(1); transform-origin:bottom center; }
+  /* 收尾：origin 切到顶部，从上方退出 */
+  #stage.curtain-out #curtain .panel{
+    transform:scaleY(0); transform-origin:top center;
+    transition-delay:0s;
+  }
+
+  /* ---- 线条扫过（每次切换播放一次） ---- */
+  #fxlines{ position:absolute; inset:0; z-index:36; pointer-events:none; opacity:0; }
+  #stage.playfx #fxlines{ opacity:1; }
+  #fxlines line{ stroke-width:7; stroke-linecap:round; stroke-dasharray:2200; stroke-dashoffset:2200; }
+  #fxlines .dot{ opacity:0; }
+  #stage.playfx #fxlines line { animation: drawLine .8s cubic-bezier(.22,1,.36,1) both; }
+  #stage.playfx #fxlines .dot  { animation: dotIn .5s ease both; }
+  #stage.playfx #fxlines line:nth-of-type(1){ animation-delay:.02s; }
+  #stage.playfx #fxlines line:nth-of-type(2){ animation-delay:.10s; }
+  #stage.playfx #fxlines line:nth-of-type(3){ animation-delay:.18s; }
+  #stage.playfx #fxlines .dot:nth-of-type(1){ animation-delay:.34s; }
+  #stage.playfx #fxlines .dot:nth-of-type(2){ animation-delay:.44s; }
+  #stage.playfx #fxlines .dot:nth-of-type(3){ animation-delay:.54s; }
+  @keyframes drawLine{ to{ stroke-dashoffset:0 } }
+  @keyframes dotIn{ 0%{opacity:0; transform:scale(0)} 70%{opacity:1; transform:scale(1.3)} 100%{opacity:1; transform:scale(1)} }
+
+  /* ================= 通用元件 ================= */
+  h1,h2,.display{ font-family:'ZCOOL KuaiLe','PingFang SC','Microsoft YaHei',system-ui,sans-serif; font-weight:400; letter-spacing:.5px; }
+  h1{ font-size:74px; line-height:1.08; }
+  h2{ font-size:46px; line-height:1.15; }
+  .kicker{
+    display:inline-block; font-family:'PingFang SC','Microsoft YaHei',system-ui,sans-serif; font-weight:800;
+    font-size:17px; letter-spacing:3px; text-transform:uppercase;
+    padding:8px 18px; border-radius:999px;
+    background:var(--yellow); border:3px solid var(--ink); box-shadow:4px 4px 0 var(--ink);
+  }
+  p.body{ font-size:21px; line-height:1.9; color:var(--ink-soft); }
+
+  .shimmer{
+    background:linear-gradient(100deg,var(--blue-deep),var(--teal),var(--green-deep),var(--blue-deep));
+    background-size:280% 100%;
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    animation: shimmerMove 6s linear infinite;
+  }
+  @keyframes shimmerMove{ to{ background-position:280% 0 } }
+
+  .hl{ position:relative; white-space:nowrap; }
+  .hl::after{
+    content:""; position:absolute; left:-4px; right:-4px; bottom:6px; height:20px;
+    background:var(--yellow); border-radius:8px; z-index:-1; opacity:.85;
+    transform-origin:left center; animation: hlGrow .6s ease both;
+  }
+  @keyframes hlGrow{ from{ transform:scaleX(0) } to{ transform:scaleX(1) } }
+
+  .card{ background:#fff; border:var(--outline); border-radius:var(--radius-sm); box-shadow:8px 8px 0 rgba(30,60,79,.9); }
+
+  /* ---- 图片相框（照片自身不再有持续动效） ---- */
+  .photo{
+    position:relative; border:4px solid var(--ink); border-radius:24px;
+    background:
+      repeating-linear-gradient(45deg, rgba(255,255,255,.5) 0 14px, rgba(255,255,255,.15) 14px 28px),
+      linear-gradient(135deg, var(--blue), var(--teal));
+    display:grid; place-content:center; gap:8px; text-align:center; color:#fff; overflow:hidden;
+  }
+  .photo .photo-img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; }
+  .photo .ph-ico{ font-size:52px; line-height:1; filter:drop-shadow(0 3px 6px rgba(0,0,0,.25)); }
+  .photo .ph-txt{
+    font-family:'PingFang SC','Microsoft YaHei',system-ui,sans-serif; font-weight:700; font-size:16px; letter-spacing:2px;
+    background:rgba(30,60,79,.55); padding:4px 14px; border-radius:999px; justify-self:center;
+  }
+  .tint-blue { background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.5) 0 14px,rgba(255,255,255,.15) 14px 28px),linear-gradient(135deg,var(--blue),var(--blue-deep)); }
+  .tint-teal { background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.5) 0 14px,rgba(255,255,255,.15) 14px 28px),linear-gradient(135deg,var(--teal),var(--blue)); }
+  .tint-green{ background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.5) 0 14px,rgba(255,255,255,.15) 14px 28px),linear-gradient(135deg,var(--green),var(--green-deep)); }
+  .tint-sun  { background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.5) 0 14px,rgba(255,255,255,.15) 14px 28px),linear-gradient(135deg,var(--yellow),var(--sun)); }
+
+  .polaroid{ background:#fff; padding:12px 12px 48px; border:3px solid var(--ink); border-radius:14px; box-shadow:10px 12px 0 rgba(30,60,79,.18); }
+  .polaroid .photo{ height:100%; border-radius:8px; }
+  .polaroid .cap{ font-size:16px; color:var(--ink-soft); text-align:center; margin-top:10px; }
+
+  /* ---- 漂浮装饰 ---- */
+  .deco{ position:absolute; pointer-events:none; user-select:none; z-index:3; }
+  .float-a{ animation:floatA 6s   ease-in-out infinite; }
+  .float-b{ animation:floatA 7.6s ease-in-out infinite reverse; }
+  .float-c{ animation:floatA 9s   ease-in-out infinite; }
+  @keyframes floatA{ 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-15px) } }
+  .spin-slow{ animation:spin 16s linear infinite; }
+  @keyframes spin{ to{ transform:rotate(360deg) } }
+  .sway{ animation:sway 5s ease-in-out infinite; transform-origin:top center; }
+  @keyframes sway{ 0%,100%{ transform:rotate(-5deg) } 50%{ transform:rotate(5deg) } }
+  .wiggle:hover{ animation:wiggle .5s ease-in-out; }
+  @keyframes wiggle{ 0%,100%{transform:rotate(0)} 25%{transform:rotate(-6deg)} 75%{transform:rotate(6deg)} }
+
+  .spark{ position:absolute; width:9px; height:9px; border-radius:50%; background:var(--yellow);
+    box-shadow:0 0 10px rgba(255,201,60,.9); animation: riseUp linear infinite; opacity:0; }
+  @keyframes riseUp{ 0%{opacity:0; transform:translateY(20px) scale(.4)} 15%{opacity:.9} 100%{opacity:0; transform:translateY(-320px) scale(1)} }
+  .tape{ position:absolute; width:122px; height:34px; background:rgba(46,155,230,.75);
+    border-left:2px dashed rgba(255,255,255,.7); border-right:2px dashed rgba(255,255,255,.7);
+    box-shadow:0 4px 8px rgba(30,60,79,.12); }
+
+  /* ================= UI ================= */
+  #ui{ position:fixed; inset:0; pointer-events:none; z-index:50; }
+  #progress{ position:absolute; top:0; left:0; height:6px; width:0;
+    background:linear-gradient(90deg,var(--blue),var(--teal),var(--green),var(--yellow));
+    transition:width .45s cubic-bezier(.22,1,.36,1); border-radius:0 6px 6px 0; }
+  .nav-btn{ pointer-events:auto; position:absolute; top:50%; transform:translateY(-50%);
+    width:58px; height:58px; border-radius:50%; border:3px solid var(--ink);
+    background:#fff; color:var(--ink); font-size:24px; cursor:pointer;
+    display:grid; place-items:center; box-shadow:4px 4px 0 var(--ink); transition:transform .16s, background .2s; }
+  .nav-btn:hover{ background:var(--yellow); }
+  .nav-btn:active{ transform:translateY(-50%) translate(3px,3px); box-shadow:1px 1px 0 var(--ink); }
+  #prev{ left:22px; } #next{ right:22px; }
+  .nav-btn[disabled]{ opacity:.25; cursor:default; }
+  #dots{ position:absolute; left:50%; bottom:20px; transform:translateX(-50%);
+    display:flex; gap:10px; align-items:center; background:rgba(255,255,255,.85);
+    border:3px solid var(--ink); padding:9px 16px; border-radius:999px;
+    box-shadow:4px 4px 0 var(--ink); pointer-events:auto; }
+  .dot{ width:12px; height:12px; border-radius:50%; background:#CFE3EC; border:2px solid var(--ink);
+    cursor:pointer; transition:transform .25s, background .25s; }
+  .dot.active{ background:var(--blue); transform:scale(1.4); }
+  #counter{ position:absolute; right:26px; bottom:26px; font-weight:800; font-size:17px;
+    background:var(--blue-deep); color:#fff; border:3px solid var(--ink);
+    padding:6px 16px; border-radius:999px; box-shadow:4px 4px 0 var(--ink); pointer-events:auto; }
+  .hint{ position:absolute; left:26px; bottom:26px; font-size:14px; color:var(--ink-soft); letter-spacing:1px;
+    background:rgba(255,255,255,.78); padding:6px 14px; border-radius:999px; border:2px dashed rgba(30,60,79,.4); }
+
+  /* ================= 布局 ================= */
+  .split{ display:grid; grid-template-columns:1.05fr .95fr; gap:52px; align-items:center; width:100%; }
+  .stack{ display:flex; flex-direction:column; gap:24px; }
+
+  /* ---- 无障碍：减少动效 ---- */
+  @media (prefers-reduced-motion: reduce){
+    .float-a,.float-b,.float-c,.spin-slow,.sway,.sun,body::before,.star{ animation:none !important; }
+    .slide, .slide *{ animation-duration:.01ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<div id="viewport">
+  <div id="stage" data-fx="slide">
+
+    <!-- 舞台背景风景（远山 + 太阳 + 光点） -->
+    <div class="scenery">
+      <div class="sun"></div>
+      <svg class="mtn" viewBox="0 0 1280 190" preserveAspectRatio="none">
+        <path d="M0,190 L0,120 L150,58 L300,120 L430,74 L560,130 L700,66 L840,128 L980,80 L1120,132 L1280,84 L1280,190 Z" fill="#CDEBFF" opacity=".85"/>
+        <path d="M0,190 L0,148 L180,96 L340,150 L500,104 L660,156 L820,108 L980,158 L1140,116 L1280,150 L1280,190 Z" fill="#BFE8D6" opacity=".9"/>
+        <path d="M0,190 L0,172 L200,140 L400,178 L600,144 L800,180 L1000,148 L1200,182 L1280,168 L1280,190 Z" fill="#FBE9A8" opacity=".9"/>
+      </svg>
+      <div class="spark" style="left:18%; animation-duration:9s;  animation-delay:.4s;"></div>
+      <div class="spark" style="left:42%; animation-duration:12s; animation-delay:2.2s; background:var(--teal);"></div>
+      <div class="spark" style="left:67%; animation-duration:10s; animation-delay:1.1s; box-shadow:0 0 10px rgba(46,155,230,.9); background:var(--blue);"></div>
+      <div class="spark" style="left:86%; animation-duration:13s; animation-delay:3.6s; background:var(--green);"></div>
+      <div class="spark" style="left:30%; animation-duration:11s; animation-delay:5.0s;"></div>
+    </div>
+
+    <!-- 幻灯片在 Task 4 插入到这里 -->
+
+    <!-- 幕布（wipe 转场用） -->
+    <div id="curtain"><div class="panel"></div><div class="panel"></div><div class="panel"></div><div class="panel"></div></div>
+
+    <!-- 线条扫过（每次切换播放一次） -->
+    <svg id="fxlines" viewBox="0 0 1280 720" preserveAspectRatio="none">
+      <line x1="-200" y1="196" x2="1500" y2="96"  stroke="#2E9BE6"/>
+      <line x1="-200" y1="360" x2="1500" y2="300" stroke="#21C4B5"/>
+      <line x1="-200" y1="500" x2="1500" y2="560" stroke="#FFC93C"/>
+      <circle class="dot" cx="330"  cy="168" r="11" fill="#2E9BE6"/>
+      <circle class="dot" cx="880"  cy="318" r="9"  fill="#21C4B5"/>
+      <circle class="dot" cx="560"  cy="524" r="10" fill="#FFC93C"/>
+    </svg>
+
+  </div>
+</div>
+
+<!-- ================= UI ================= -->
+<div id="ui">
+  <div id="progress"></div>
+  <button class="nav-btn" id="prev" aria-label="上一页">‹</button>
+  <button class="nav-btn" id="next" aria-label="下一页">›</button>
+  <div id="dots"></div>
+  <div id="counter">1 / 10</div>
+  <div class="hint">← → / 空格 翻页 · 支持触屏滑动</div>
+</div>
+
+<script>
+(function(){
+  const stage   = document.getElementById('stage');
+  const slides  = Array.from(document.querySelectorAll('.slide'));
+  const dotsBox = document.getElementById('dots');
+  const counter = document.getElementById('counter');
+  const bar     = document.getElementById('progress');
+  const btnPrev = document.getElementById('prev');
+  const btnNext = document.getElementById('next');
+  let idx = 0, busy = false, lineTimer = null, wipeTimer = null;
+
+  /* ---------- 1) 自适应缩放：固定 16:9 等比 fit ---------- */
+  function fit(){
+    const pad = 36;
+    const scale = Math.min((innerWidth - pad*2)/1280, (innerHeight - pad*2)/720);
+    stage.style.transform = 'scale(' + scale + ')';
+  }
+  addEventListener('resize', fit); fit();
+
+  /* ---------- 2) 圆点导航 ---------- */
+  slides.forEach((s,i)=>{
+    const d = document.createElement('button');
+    d.className = 'dot' + (i===0?' active':'');
+    d.title = s.dataset.label || ('第 '+(i+1)+' 页');
+    d.addEventListener('click', ()=> go(i));
+    dotsBox.appendChild(d);
+  });
+  const dots = Array.from(dotsBox.children);
+
+  /* ---------- 3) 线条扫过（每次切换重播一次） ---------- */
+  function playLines(){
+    stage.classList.remove('playfx'); void stage.offsetWidth; stage.classList.add('playfx');
+    clearTimeout(lineTimer);
+    lineTimer = setTimeout(()=> stage.classList.remove('playfx'), 950);
+  }
+
+  /* ---------- 4) 切换幻灯片 ----------
+        dir: 'next' | 'prev'  →  决定方向相关动画 */
+  function swap(outS, inS, dir){
+    // 进入的页：重置子元素动画后重新激活
+    inS.classList.remove('active'); void inS.offsetWidth;
+    inS.dataset.dir = dir;
+    inS.classList.add('active');
+
+    // 离场的页：保留可见并播放退出动画，动画结束后隐藏
+    if(outS){
+      outS.classList.remove('active');
+      outS.dataset.dir = dir;
+      outS.classList.add('leaving');
+      setTimeout(()=> outS.classList.remove('leaving'), 720);
+    }
+    playLines();
+  }
+
+  function runWipe(outS, inS, dir){
+    stage.classList.add('curtain-in');
+    clearTimeout(wipeTimer);
+    wipeTimer = setTimeout(()=>{
+      // 幕布完全盖住时换页
+      if(outS){ outS.classList.remove('active'); outS.classList.remove('leaving'); }
+      inS.classList.remove('active'); void inS.offsetWidth;
+      inS.dataset.dir = dir; inS.classList.add('active');
+      stage.classList.remove('curtain-in');
+      stage.classList.add('curtain-out');
+      playLines();
+      wipeTimer = setTimeout(()=> stage.classList.remove('curtain-out'), 900);
+    }, 470);
+  }
+
+  function go(n){
+    n = Math.max(0, Math.min(slides.length-1, n));
+    if(n===idx || busy) return;
+    const dir = n > idx ? 'next' : 'prev';
+    const outS = slides[idx], inS = slides[n];
+    idx = n;
+    updateUI(dir);
+
+    const fx = stage.dataset.fx;
+    if(fx === 'wipe'){
+      busy = true; runWipe(outS, inS, dir);
+      setTimeout(()=> busy = false, 900);
+    } else {
+      busy = true; swap(outS, inS, dir);
+      setTimeout(()=> busy = false, 700);
+    }
+  }
+  const next = ()=> go(idx+1);
+  const prev = ()=> go(idx-1);
+
+  function updateUI(dir){
+    dots.forEach((d,i)=> d.classList.toggle('active', i===idx));
+    counter.textContent = (idx+1) + ' / ' + slides.length;
+    bar.style.width = ((idx+1)/slides.length*100) + '%';
+    btnPrev.disabled = idx===0;
+    btnNext.disabled = idx===slides.length-1;
+  }
+
+  /* ---------- 5) 翻页交互 ---------- */
+  btnNext.addEventListener('click', next);
+  btnPrev.addEventListener('click', prev);
+
+  document.addEventListener('keydown', e=>{
+    if(['ArrowRight','ArrowDown',' ','PageDown','Enter'].includes(e.key)){ e.preventDefault(); next(); }
+    if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){ e.preventDefault(); prev(); }
+    if(e.key==='Home') go(0);
+    if(e.key==='End')  go(slides.length-1);
+  });
+
+  stage.addEventListener('click', e=>{
+    const r = stage.getBoundingClientRect();
+    (e.clientX - r.left) > r.width/2 ? next() : prev();
+  });
+  let tx=null;
+  stage.addEventListener('touchstart', e=>{ tx = e.changedTouches[0].clientX; }, {passive:true});
+  stage.addEventListener('touchend', e=>{
+    if(tx===null) return;
+    const dx = e.changedTouches[0].clientX - tx;
+    if(Math.abs(dx)>50){ dx<0 ? next() : prev(); }
+    tx=null;
+  }, {passive:true});
+
+  updateUI('next');
+})();
+</script>
+</body>
+</html>
