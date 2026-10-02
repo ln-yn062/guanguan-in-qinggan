@@ -215,6 +215,21 @@ async def main():
         ok(len(names) >= 3 and len(set(names)) >= 3,
            f"第 3 页图片入场动画 = {names}（应 ≥3 种不同）")
 
+        print("⑬ 翻页时入场动画真的重播（而非载入时只播一次）")
+        await pg.keyboard.press("Home"); await settle(pg)
+        await pg.keyboard.press("ArrowRight")          # 翻到第 2 页
+        await pg.wait_for_timeout(180)                 # 卡在入场动画进行中采样
+        fresh = await pg.evaluate("""()=>{
+          return [...document.querySelectorAll('.slide.active [data-anim]')]
+            .flatMap(e=>[...e.getAnimations()])
+            .filter(a=>a.playState==='running' && a.currentTime!=null && a.currentTime<500)
+            .length;
+        }""")
+        await settle(pg)
+        ok(fresh > 0,
+           f"翻到第 2 页 180ms 时「刚起跑(running,currentTime<500ms)」的入场动画数 = {fresh}"
+           f"（应 > 0；为 0 说明动效只在整份文档载入时播过一次，翻页看不到）")
+
         print("③b 无报错（全程）")
         ok(not errs, f"pageerror / console error = {errs or 'none'}")
 
