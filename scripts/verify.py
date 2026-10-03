@@ -71,7 +71,7 @@ async def main():
 
         print("① 页数")
         n = await pg.eval_on_selector_all(".slide", "els=>els.length")
-        ok(n == 10, f".slide 数量 = {n}（应为 10）")
+        ok(n == 11, f".slide 数量 = {n}（应为 11）")
 
         print("② 图片 / 字体")
         imgs = await pg.eval_on_selector_all(
@@ -96,7 +96,7 @@ async def main():
 
         print("④b 逐页按下可达末页")
         await pg.keyboard.press("Home"); await settle(pg)
-        for _ in range(9):
+        for _ in range(n - 1):
             await pg.keyboard.press("ArrowRight"); await settle(pg)
         last = await pg.eval_on_selector_all(".slide.active", "els=>els.map(e=>e.dataset.label)")
         ok(len(last) == 1 and last[0] == "旅程结束", f"末页 active={last}")
@@ -116,7 +116,7 @@ async def main():
 
         print("⑥ 逐页截图 + 标题可见性")
         bad_sh = []
-        for i in range(10):
+        for i in range(n):
             await pg.keyboard.press("Home"); await settle(pg)
             for _ in range(i):
                 await pg.keyboard.press("ArrowRight"); await settle(pg)

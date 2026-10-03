@@ -28,6 +28,9 @@ MAP = [
     ("d08-mingsha.jpg",     "e825f2b9551bcd46b1fb94cb5244ef7a.jpg", 2000, False),
     ("d08-flag.jpg",        "bcd85b19780ae3acf833098b18a896e0.jpg", 2000, False),
     ("d09-danxia.jpg",      "9ed561c76fc2cf7cd4f24d5acb35f391.jpg", 2000, False),
+    ("d10-grass.jpg",       "f518706058e4b05bb71676fc4bb51b3c.jpg", 2000, False),
+    ("d10-brother.jpg",     "4e5b362919f949d9456ab9fd67321ef1.jpg", 1500, False),
+    ("d10-lake.jpg",        "3a884ea5ffa6b8f2693e18195836552c.jpg", 2000, False),
 ]
 
 MAX_BYTES = 500 * 1024
